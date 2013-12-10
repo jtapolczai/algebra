@@ -1,0 +1,23 @@
+--Haddock-format: http://www.haskell.org/haddock/doc/html/ch03s08.html
+--Make documentation: (just once) >cabal configure
+--                                >cabal haddock [--executables]
+--Make .exe: ghc --make Main.hs
+
+name:          algebrastruct
+version:       0.1
+build-type:    Simple
+cabal-version: >= 1.2
+author:        Janos Tapolczai
+maintainer:    Janos Tapolczai
+stability:     experimental
+bug-reports:   mailto:x@y.com
+synopsis:      Algebraic structures
+description:   TODO
+category:      Algebra
+license:       PublicDomain
+
+library
+   build-depends:   base, template-haskell
+   extensions:      DoAndIfThenElse, EmptyDataDecls, FlexibleInstances, TemplateHaskell
+   exposed-modules: Grouplike, Grouplike.Internal, Grouplike.Traits,
+                    Ringlike, Ringlike.Internal, Ringlike.Traits
