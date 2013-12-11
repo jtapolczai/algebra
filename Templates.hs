@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
 
-module Templates where
+module Templates (makeContentTag, makeEnumTag) where
 
 import Language.Haskell.TH
 import Language.Haskell.TH.Syntax
@@ -37,6 +37,9 @@ import Language.Haskell.TH.Syntax
       instance [TagName]Tag [TagValue0] where get[TagName]Value _ = [TagValue0]
       ...
       instance [TagName]Tag [TagValue0] where get[TagName]Value _ = [TagValue0]
+    
+      (The instance declaration for the sum type)
+      instance [TagName]Tag [TagName]Value where get[TagName]Value = id
     @
 
     An simple example for trait A and values X, Y would be (deriving-claused ommitted):
@@ -52,6 +55,8 @@ import Language.Haskell.TH.Syntax
 
       instance XTag TagX where getA _ = X
       instance XTag TagY where getA _ = Y
+
+      instance XTag AValue where getA = id
     @
 
 -}
@@ -90,6 +95,9 @@ makeEnumTag tagName = makeContentTag tagName . map (\x -> (x,False))
       instance [TagName]Tag [TagValue0] where get[TagName]Value (Tag[TagValue0] [a]) = [TagValue0] [a]
       ...
       instance [TagName]Tag [TagValueN] where get[TagName]Value (Tag[TagValuN0] [a]) = [TagValueN] [a]
+    
+      (The instance declaration for the sum type)
+      instance [TagName]Tag [TagName]Value where get[TagName]Value = id
     @
 
     An example is the trait "UnitElement", where one constructor has data (the unit element),
@@ -109,14 +117,16 @@ makeEnumTag tagName = makeContentTag tagName . map (\x -> (x,False))
         (since at least one constructor has data, the type is "t a -> ..." instead of "t -> ...")
          getUnitElementValue :: t a -> UnitElementValue
 
-      instance UnitElementTag TagX where getA _ = X
-      instance UnitElemenTag TagY where getA _ = Y
+      instance UnitElementTag TagX where getUnitElementValur _ = X
+      instance UnitElemenTag TagY where getUnitElementValur _ = Y
+
+      instance UnitElementTag UnitElementValue where getUnitElementValue = id
     @
 
 -}
 makeContentTag :: String -> [(String,Bool)] -> DecsQ
 makeContentTag tagName tagValues = sequenceQ $ sumType : nonSumTypes ++ [tagClass] ++ (sumTypeInstance : instances)
-   where cxt = returnQ []
+   where cxt' = returnQ []
 
          typeParamNeeded = or $ map snd $ tagValues
          aTV = if typeParamNeeded then [PlainTV $ mkName "a"] else []
@@ -124,7 +134,7 @@ makeContentTag tagName tagValues = sequenceQ $ sumType : nonSumTypes ++ [tagClas
 
          --sum type
          stName = mkName $ tagName ++ "Value"
-         sumType = dataD cxt stName aTV sumTypeConstructors derived
+         sumType = dataD cxt' stName aTV sumTypeConstructors derived
 
          mkTypeConstructor (x, True) = normalC (mkName x) aType
          mkTypeConstructor (x, False) = normalC (mkName x) []
@@ -132,33 +142,35 @@ makeContentTag tagName tagValues = sequenceQ $ sumType : nonSumTypes ++ [tagClas
          sumTypeConstructors = map mkTypeConstructor tagValues
 
          --non-sum types
-         mkNonSumType (x,b) = dataD cxt (mkName $ "Tag" ++ x) aTV
+         mkNonSumType (x,b) = dataD cxt' (mkName $ "Tag" ++ x) aTV
                                     [mkTypeConstructor ("Tag"++x, b)] derived
          nonSumTypes = map mkNonSumType tagValues
 
-         derived = map mkName ["Eq", "Show", "Read"]
+         derived = map mkName ["Eq"]
 
          --class declaration
          t = varT $ mkName "t"
          methodName = mkName $ "get" ++ tagName ++ "Value"
          className = mkName $ tagName ++ "Tag"
 
-         methodType = if typeParamNeeded then forallT aTV cxt $ appT (appT arrowT (appT t (varT $ mkName "a"))) (appT (conT stName) (varT $ mkName "a"))
+         methodType = if typeParamNeeded then forallT aTV cxt' $ appT (appT arrowT (appT t (varT $ mkName "a"))) (appT (conT stName) (varT $ mkName "a"))
                       else appT (appT arrowT t) (conT stName)
 
          getMethod = sigD methodName methodType
-         tagClass = classD cxt className [PlainTV $ mkName "t"] [] [getMethod]
+         tagClass = classD cxt' className [PlainTV $ mkName "t"] [] [getMethod]
          
          --instance declarations
-         makeInstance (x,b) = instanceD cxt (appT (conT $ className) (conT $ mkName $ "Tag" ++ x)) [methodImpl (x,b)]
+         makeInstance (x,b) = instanceD cxt' (appT (conT $ className) (conT $ mkName $ "Tag" ++ x)) [methodImpl (x,b)]
          methodImpl (x,b) = funD methodName (if b then [clause [conP (mkName ("Tag" ++ x)) [varP $ mkName "a"]]
                                                 (normalB $ appE (conE $ mkName x) (varE $ mkName "a")) []]
                                              else [clause [wildP] (normalB $ conE $ mkName x) []])
          instances = map makeInstance tagValues
 
-         sumTypeInstance = instanceD cxt (appT (conT $ className) (conT $ mkName $ tagName ++ "Value")) [sumTypeImpl]
+         sumTypeInstance = instanceD cxt' (appT (conT $ className) (conT $ mkName $ tagName ++ "Value")) [sumTypeImpl]
          sumTypeImpl = funD methodName [clause [] (normalB $ varE $ mkName "id") []]
 
+-- |Prints the code generated by a template to the console.
+printCode :: Ppr a => Q a -> IO ()
 printCode c = do
    c' <- runQ c
    putStrLn $ pprint c'

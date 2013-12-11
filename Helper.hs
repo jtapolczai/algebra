@@ -6,3 +6,7 @@ type Un a = a -> a
 type Bin a = a -> a -> a
 -- |A binary predicate.
 type Rel a = a -> a -> Bool
+
+implode :: [a] -> [[a]] -> [a]
+implode sep xs | null xs   = []
+               | otherwise = foldl1 (\x y -> concat [x,sep,y]) xs

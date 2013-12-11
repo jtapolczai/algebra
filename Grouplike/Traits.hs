@@ -63,6 +63,41 @@ $(makeContentTag "LeftDivider" [("LeftDivider", True), ("NoLeftDivider", False),
 $(makeContentTag "RightDivider" [("RightDivider", True), ("NoRightDivider", False), ("UnknownRightDivider", False)])
 $(makeContentTag "Inverse" [("Inverse", True), ("NoInverse", False), ("UnknownInverse", False)])
 
+instance Show CommutativityValue where
+   show UnknownCommutative = ""
+   show Commutative = "Commutative"
+   show NonCommutative = "NonCommutative"
+
+instance Show AssociativityValue where
+   show UnknownAssociative = ""
+   show Associative = "Associative"
+   show NonAssociative = "NonAssociative"
+
+instance Show IdempotenceValue where
+   show UnknownIdempotent = ""
+   show Idempotent = "Idempotent"
+   show NonIdempotent = "NonIdempotent"
+
+instance Show el => Show (UnitElementValue el) where
+   show UnknownUnitElement = ""
+   show (UnitElement el) = "UnitElement " ++ show el
+   show NoUnitElement = "NoUnitElement"
+
+instance Show (LeftDividerValue el) where
+   show UnknownLeftDivider = ""
+   show (LeftDivider el) = "LeftDivider"
+   show NoLeftDivider = "NoLeftDivider"
+
+instance Show (RightDividerValue el) where
+   show UnknownRightDivider = ""
+   show (RightDivider el) = "RightDivider"
+   show NoRightDivider = "NoRightDivider"
+
+instance Show (InverseValue el) where
+   show UnknownInverse = ""
+   show (Inverse el) = "Inverse"
+   show NoInverse = "NoInverse"
+
 -- |A grouplike structure with a binary operation.
 class Grouplike s where
    op :: s el t -> Bin el

@@ -10,17 +10,17 @@
   the following:
   
   @
-    flipOP :: Commutative a -> a el t -> el -> el -> el
-    flipOP struct = flip (op struct)
+flipOP :: Commutative a => a el t -> el -> el -> el
+flipOP struct = flip (op struct)
   @
 
   With the functions of this module, the structures can be queried at runtime.
   We can write the same function as:
 
   @
-    flipOP :: PropertyTag c => GrouplikeStruct c a i u l r inv el t -> el -> el -> el
-    flipOP struct = if isCommutative struct == Just True then flip (op struct)
-                    else error "Passed non-commutative structure!"
+flipOP :: CommutativityTag c => GrouplikeStruct c a i u l r inv el t -> el -> el -> el
+flipOP struct = if isCommutative struct == Just True then flip (op struct)
+                else error "Passed non-commutative structure!"
   @
 
   Here, the grouplike structure is accessed directly, and we had to specify
@@ -32,7 +32,7 @@
   entirely with the function @makeDynamic@:
 
   @
-    [makeDynamic $ makeMonoid (+) 0 "add", makeDynamic $ makeCommutativeMonoid (*) 0]
+[makeDynamic $ makeMonoid (+) 0 "add", makeDynamic $ makeCommutativeMonoid (*) 0]
   @
 
   The type parameters in the output of makeDynamic are sum types, meaning that, to
@@ -44,10 +44,10 @@
   functions like the following are made possible:
 
   @
-    getCommutativeAlgebras :: PropertyTag c => GrouplikeStruct c a i u l r inv el t -> [el] -> [el]
-    getCommutativeAlgebras = filter (toBool . isCommutative)
-      where toBool (Just True) = True
-            toBool _           = False
+getCommutativeAlgebras :: PropertyTag c => GrouplikeStruct c a i u l r inv el t -> [el] -> [el]
+getCommutativeAlgebras = filter (toBool . isCommutative)
+  where toBool (Just True) = True
+        toBool _           = False
   @
 
   This takes a list of (dynamic) structures and filters out those which are commutative.
@@ -55,7 +55,7 @@
   Another example:
 
   @
-    getUnitElements = map getUnitElement
+getUnitElements = map getUnitElement
   @
 
   This again takes a list of structures and returns their unit elements (if they exist).
@@ -64,17 +64,28 @@
   checked ones. For example, the following is not possible:
 
   @
-    s = makeDynamic $ makeSemigroup (+) "add"
+s = makeDynamic $ makeSemigroup (+) "add"
 
-    functionOnGroups :: CommutativeGroup s => s el t -> [el] -> el
-    functionOnGroups = ...
+functionOnGroups :: CommutativeGroup s => s el t -> [el] -> el
+functionOnGroups = ...
   @
 
   >>> f s [...]
   Compile time error
 
   In order to turn a dynamic structure back into a static one, the it has to
-  recreated from scratch via the constructor methods.
+  recreated from scratch via the constructor methods. E.g. to return the monoids
+  from a list of dynamic structures, we'd write:
+
+  @
+filterMonoids :: [DynamicStruct el t] -> [MonoidStruct el t]
+filterMonoids =  makeStatic . (filter (fst . hasUnit . getUnitElemt))
+  where hasUnit (UnitElement u) = (True, u) 
+        hasUnit _               = (False, undefined)
+
+        makeStatic m = makeMonoid (op m) (snd $ hasUnit $ getUnitElement m) (gTag m)
+  @
+
 -}
 module Grouplike.Internal (
    module Grouplike.Traits,
@@ -178,11 +189,30 @@ data GrouplikeStruct c a i u l r inv el t =
                   -- |Gets the tag of the structure.
                   gTag::t}
 
-instance (Show c, Show a, Show i) => Show (GrouplikeStruct c a i u l r inv el t) where
-   show struct = "Struct: " ++ show (gCommutativity struct)
+instance (CommutativityTag c,
+          AssociativityTag a,
+          IdempotenceTag i,
+          UnitElementTag u,
+          LeftDividerTag l,
+          RightDividerTag r,
+          InverseTag inv,
+          Show el,
+          Show t) => Show (GrouplikeStruct c a i u l r inv el t) where
+   show struct = "Algebra [" ++ show t ++ "] (" ++ implode ", " traits ++ ")"
+      where cm = getCommutativityValue $ gCommutativity struct
+            as = getAssociativityValue $ gAssociativity struct
+            ie = getIdempotenceValue $ gIdempotence struct
+            ui = getUnitElementValue $ gUnitElement struct
+            ld = getLeftDividerValue $ gLeftDivider struct
+            rd = getRightDividerValue $ gRightDivider struct
+            iv = getInverseValue $ gInverse struct
+            t = gTag struct
+            traits = filter (not . null) $ [show cm, show as, show ie, show ui, show ld, show rd, show iv]
+
+
 
 instance Grouplike (GrouplikeStruct c a i u l r inv) where
-   op = gOperation
+  op = gOperation
 instance Commutative (GrouplikeStruct TagCommutative a i u l r inv) where
 instance Associative (GrouplikeStruct c TagAssociative i u l r inv) where
 instance Idempotent (GrouplikeStruct c a TagIdempotent u l r inv) where
@@ -206,6 +236,8 @@ instance CommutativeGroup (GrouplikeStruct TagCommutative TagAssociative i TagUn
 instance Semilattice (GrouplikeStruct TagCommutative TagAssociative TagIdempotent u l r inv) where
 instance BoundedSemilattice (GrouplikeStruct TagCommutative TagAssociative TagIdempotent TagUnitElement l r inv) where
 
+-- |Type synonym for a dynamic structure which doesn't have static checks on its properties.
+type DynamicStruct el t = GrouplikeStruct CommutativityValue AssociativityValue IdempotenceValue UnitElementValue LeftDividerValue RightDividerValue InverseValue el t
 -- |Type synomym for a magma.
 type MagmaStruct el t = GrouplikeStruct TagUnknownCommutative TagUnknownAssociative TagUnknownIdempotent TagUnknownUnitElement TagUnknownLeftDivider TagUnknownRightDivider TagUnknownInverse el t
 -- |Type synonym for a quasigroup.
@@ -344,7 +376,7 @@ makeDynamic :: (CommutativityTag c,
                 LeftDividerTag l,
                 RightDividerTag r,
                 InverseTag inv)
-                 => GrouplikeStruct c a i u l r inv el t -> GrouplikeStruct CommutativityValue AssociativityValue IdempotenceValue UnitElementValue LeftDividerValue RightDividerValue InverseValue el t
+                 => GrouplikeStruct c a i u l r inv el t -> DynamicStruct el t
 makeDynamic g =
   (GrouplikeStruct (isCommutative g)
                    (isAssociative g)
