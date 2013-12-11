@@ -2,3 +2,4 @@
 
 module Ringlike where
 
+import Ringlike.Internal
