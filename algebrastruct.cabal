@@ -12,12 +12,45 @@ maintainer:    Janos Tapolczai
 stability:     experimental
 bug-reports:   mailto:x@y.com
 synopsis:      Algebraic structures
-description:   TODO
+description:   Algebra package which uses explicit objects instead of type classes
+               to describe algebraic structures. Includes grouplike and ringlike
+               algebraic structures and relations (which include things like
+               partial/total orders, equivalence classes, etc.).
+
+               The types (e.g. Int, Bool, Complex) are left as-is, and have
+               no type classes implemented on them to encode which operations
+               can be performed and which algebraic properties are true for them.
+               Instead, one can create algebraic objects with the desired properties
+               and pass them around as ordinary values to functions which need them.
+
+               The advantage of this is that one can have multiple structures
+               pertaining to a single type; it is no longer necessary to create
+               newtypes just to have, say, Bool, implemented the different
+               monoids @(&&,True)@ and @(||,False)@.
+
+               The obvious disadvantage is that every function which wishes to
+               exploit certain properties needs to have an additional parameter
+               for the algebraic structure. This is, admittedly, inconvenient,
+               but shortcuts can be defined for common operations. For example,
+               we can define functions like @sum@, @product@, @and@, and @or@ as:
+
+               @
+                  import Functions.Monoids (mdSum)
+
+                  sum = mdSum (makeMonoid (+) 0)
+                  product = mdSum (makeMonoid (*) 1)
+
+                  and = mdSum (makeMonoid (&&) True)
+                  or = mdSum (makeMonoid (||) False)
+               @
+
 category:      Algebra
 license:       PublicDomain
 
 library
-   build-depends:   base, template-haskell
+   build-depends:   base >= 4.6.0.1, template-haskell, containers >= 0.4.0.0
    extensions:      DoAndIfThenElse, EmptyDataDecls, FlexibleInstances, TemplateHaskell
-   exposed-modules: Grouplike, Grouplike.Internal, Grouplike.Traits,
-                    Ringlike, Ringlike.Internal, Ringlike.Traits
+   exposed-modules: Helper,
+                    Grouplike, Grouplike.Internal, Grouplike.Traits,
+                    Ringlike, Ringlike.Internal, Ringlike.Traits,
+                    Functions.Monoids, Functions.Groups

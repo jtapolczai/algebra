@@ -1,79 +1,138 @@
 module Relation.Traits where
 
-import Traits
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE ConstraintKinds #-}
+{-# LANGUAGE PolyKinds #-}
+
+import Templates
 import Helper
 
--- Tags for the individual traits.
+-- Tags for the individual traits of binary relations.
 
-data Reflexivity = Reflexivity
-data Irreflexivity = Irreflexivity
-data UnknownReflexivity = UnknownReflexivity
+$(makeEnumTag "Injectivity" ["Injective", "NonInjective", "UnknownInjective"])
+$(makeEnumTag "Functionality" ["Functional", "NonFunctional", "UnknownFunctional"])
+$(makeEnumTag "LeftTotality" ["LeftTotal", "NonLeftTotal", "UnknownLeftTotal"])
+$(makeEnumTag "RightTotality" ["RightTotal", "NonRightTotal", "UnknownRightTotal"])
 
-instance PropertyTag Reflexivity where hasProperty _ = Just True
-instance PropertyTag Irreflexivity where hasProperty _ = Just False
-instance PropertyTag UnknownReflexivity where hasProperty _ = Just False
+-- Tags for the individual traits of binary endorelations.
+$(makeEnumTag "Reflexivity" ["Reflexive", "Irreflexive", "Coreflexive", "NonReflexive", "UnknownReflexive"])
+$(makeEnumTag "Symmetry" ["Symmetric", "Antisymmetric", "NonSymmetric", "UnknownSymmetric"])
+$(makeEnumTag "Transitivity" ["Transitive", "NonTransitive", "UnknownTransitive"])
+$(makeEnumTag "Totality" ["Total", "NonTotal", "UnknownTotal"])
+$(makeEnumTag "Trichotonimity" ["Trichotonomous", "NonTrichotonomous", "UnknownTrichotonomous"])
+$(makeEnumTag "Euclidean" ["Euclidean", "NonEuclidean", "UnknownEuclidean"])
+$(makeEnumTag "Seriality" ["Serial", "NonSerial", "UnknownSerial"])
+$(makeEnumTag "SetLike" ["SetLike", "NonSetLike", "UnknownSetLike"])
 
-data 
+instance Show InjectivityValue where
+   show UnknownInjective = ""
+   show Injective = "Injective"
+   show NonInjective = "NonInjective"
+
+instance Show FunctionalityValue where
+   show UnknownFunctional = ""
+   show Functional = "Functional"
+   show NonFunctional = "NonFunctional"
+
+instance Show LeftTotalityValue where
+   show UnknownLeftTotal = ""
+   show LeftTotal = "LeftTotal"
+   show NonLeftTotal = "NonLeftTotal"
+
+instance Show RightTotalityValue where
+   show UnknownRightTotal = ""
+   show RightTotal = "RightTotal"
+   show NonRightTotal = "NonRightTotal"
+
+instance Show ReflexivityValue where
+   show UnknownReflexive = ""
+   show Reflexive = "Reflexive"
+   show Irreflexive = "Irreflexive"
+   show Coreflexive = "Coreflexive"
+   show NonReflexive = "NonReflexive"
+
+instance Show SymmetryValue where
+   show UnknownSymmetric = ""
+   show Symmetric = "Symmetric"
+   show Antisymmetric = "Antisymmetric"
+   show NonSymmetric = "NonSymmetric"
+
+instance Show TransitivityValue where
+   show UnknownTransitive = ""
+   show Transitive = "Transitive"
+   show NonTransitive = "NonTransitive"
+
+instance Show TotalityValue where
+   show UnknownTotal = ""
+   show Total = "Total"
+   show NonTotal = "NonTotal"
+
+instance Show TrichotonimityValue where
+   show UnknownTrichotonomous = ""
+   show Trichotonomous = "Trichotonomous"
+   show NonTrichotonomous = "NonTrichotonomous"
+
+instance Show EuclideanValue where
+   show UnknownEuclidean = ""
+   show Euclidean = "Euclidean"
+   show NonEuclidean = "NonEuclidean"
+
+instance Show SerialityValue where
+   show UnknownSerial = ""
+   show Serial = "Serial"
+   show NonSerial = "NonSerial"
+
+instance Show SetLikeValue where
+   show UnknownSetLike = ""
+   show SetLike = "SetLike"
+   show NonSetLike = "NonSetLike"
+
+-- |A relation with a binary predicate.
+class Relation s where
+   rel :: s el1 el2 t -> Rel el1 el2
+
+--TODO: add a kind signature to this to
+--get rid of dummy.
+-- |An endorelation with a binary predicate.
+class Relation s => Endorelation s where
+   dummy :: s el el t -> Rel el el
 
 
-data UnitElement a = UnitElement{getUI::a} deriving (Show, Eq, Read)
-data NoUnitElement a = NoUnitElement deriving (Show, Eq, Read)
-data UnknownUnitElement a = UnknownUnitElement deriving (Show, Eq, Read)
+-- |An injective relation: aRc and bRc implies a = b.
+class Relation s => Injective s
+-- |A functional relation: aRb and aRc implies b = c.
+class Relation s => Functional s
+-- |A left-total relation: for all a there is b s.t. aRb.
+class Relation s => LeftTotal s
+-- |A right-total (surjective) relation: for all b there is a s.t. aRb.
+class Relation s => RightTotal s
 
-instance ElementTag UnitElement where getElement = Just .  getUI
-instance ElementTag NoUnitElement where getElement _ = Nothing
-instance ElementTag UnknownUnitElement where getElement _ = Nothing
-
-data LeftDivider a = LeftDivider{getLD::a} deriving (Show, Eq, Read)
-data NoLeftDivider a = NoLeftdivider deriving (Show, Eq, Read)
-data UnknownLeftDivider a = UnknownLeftDivider deriving (Show, Eq, Read)
-
-instance ElementTag LeftDivider where getElement = Just .  getLD
-instance ElementTag NoLeftDivider where getElement _ = Nothing
-instance ElementTag UnknownLeftDivider where getElement _ = Nothing
-
-data RightDivider a = RightDivider{getRD::a} deriving (Show, Eq, Read)
-data NoRightDivider a = NoRightDivider deriving (Show, Eq, Read)
-data UnknownRightDivider a = UnknownRightDivider deriving (Show, Eq, Read)
-
-instance ElementTag RightDivider where getElement = Just .  getRD
-instance ElementTag NoRightDivider where getElement _ = Nothing
-instance ElementTag UnknownRightDivider where getElement _ = Nothing
-
-data Inverse a = Inverse{getInv::a} deriving (Show, Eq, Read)
-data NoInverse a = NoInverse deriving (Show, Eq, Read)
-data UnknownInverse a = UnknownInverse deriving (Show, Eq, Read)
-
-instance ElementTag Inverse where getElement = Just .  getInv
-instance ElementTag NoInverse where getElement _ = Nothing
-instance ElementTag UnknownInverse where getElement _ = Nothing
-
--- |A grouplike structure with a binary operation.
-class Grouplike s where
-   op :: s el t -> Bin el
-
---Individual traits which compose into the known structures (Monoids, Groups, etc.)
-
--- |A commutative grouplike structure: a `op` b = b `op` a.
-class Grouplike s => Commutative s where
--- |A associative grouplike structure: (a `op` b) `op` c = a `op` (b `op` c).
-class Grouplike s => Associative s where
--- |An idempotent grouplike structure: x `op` x = x
-class Grouplike s => Idempotent s where
--- |A grouplike structure with a unit element U: a `op` U = U `op` a = a 
-class Grouplike s => HasUnitElement s where
-   ident :: s el t -> el
--- |A grouplike structure where there exists a left divider l for
---  every pair of elements a,b: a `op` l = b
-class Grouplike s => LeftDivisible s where
-   lDiv :: s el t -> Bin el
--- |A grouplike structure where there exists a right divider r for
---  every pair of elements a,b: r `op` a = b
-class Grouplike s => RightDivisible s where
-   rDiv :: s el t -> Bin el
--- |A grouplike structure which has both left and right dividers.
-class (Grouplike s, LeftDivisible s, RightDivisible s) => Divisible s where
--- |A grouplike structure where every element a has an inverse ia,
---  which reduces a to the unit element U: a `op` ia = U
-class (Grouplike s, HasUnitElement s) => Invertible s where
-   inverse :: s el t -> Un el
+-- |A reflexive relation: aRa.
+class Endorelation s => Reflexive s
+-- |An irreflexive relation: not aRa.
+class Endorelation s => Irreflexive s
+-- |A coreflexive relation: aRb implies a = b.
+class Endorelation s => Coreflexive s
+-- |A symmetric relation: aRb implies bRa.
+class Endorelation s => Symmetric s
+-- |An antisymmetric relation: aRb and bRa implies a = b.
+class Endorelation s => Antisymmetric s
+-- |An asymmetric relation: aRb implies not bRa.
+--  a relation is asymmetric iff it is antisymmetric and irreflexive.
+class (Antisymmetric s, Irreflexive s) => Asymmetric s
+-- |A transitive relation: aRb and bRc implies aRc.
+class Endorelation s => Transitive s
+-- |A total relation: for all a,b: aRb or bRa.
+class Endorelation s => Total s
+-- |A trichotonomous relation: for all a,b exactly one of the following holds:
+--
+--  * aRb
+--  * bRa
+--  * a = b
+class Endorelation s => Trichotonomous s
+-- |An Euclidean relation: for all a,b,c: aRb and aRc implies bRc and cRb.
+class Endorelation s => Euclidean s
+-- |A serial relation: for all a there exists b s.t. aRb.
+class Endorelation s => Serial s
+-- |A set-like relation: for all a: the class of all b s.t. 
+class Endorelation s => SetLike s

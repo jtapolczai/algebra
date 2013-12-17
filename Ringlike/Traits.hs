@@ -28,66 +28,42 @@
 -}
 module Ringlike.Traits where
 
+import Grouplike.Internal
 import Helper
+import Templates
 
 
--- |A property tag for a structure which can be set to yes/no/unknown,
---  corresponding to Just True/Just False/Nothing, respectively.
-class PropertyTag t where
-   --Returns the yes/no/unknown-value to which the tag corresponds.
-   hasProperty :: t -> Maybe Bool
--- |An element tag for a structure, where the element may or may not be present.
---  An example would be a the unitElement, which is Nothing for a semigroup,
---  but Just 0 for the monoid (N,+,0).
-class ElementTag t where
-   --Returns the Just content of the tag if it has any content and Nothing otherwise.
-   getElement :: t el -> Maybe el 
+$(makeEnumTag "LeftDistributivity" ["LeftDistributive", "NonLeftDistributive", "UnknownLeftDistributive"])
+$(makeEnumTag "RightDistributivity" ["RightDistributive", "NonRightDistributive", "UnknownRightDistributive"])
+$(makeEnumTag "Annihilation" ["Annihilating", "NonAnnihilating", "UnknownAnnihilating", "AllAnnihilating"])
 
--- Tags for the individual traits.
+instance Show LeftDistributivityValue where
+   show UnknownLeftDistributive = ""
+   show LeftDistributive = "LeftDistributive"
+   show NonLeftDistributive = "NonLeftDistributive"
 
-data Commutativity = Commutativity deriving (Show, Eq, Read)
-data NoCommutativity = NoCommutativity deriving (Show, Eq, Read)
-data UnknownCommutativity = UnknownCommutativity deriving (Show, Eq, Read)
+instance Show RightDistributivityValue where
+   show UnknownRightDistributive = ""
+   show RightDistributive = "RightDistributive"
+   show NonRightDistributive = "NonRightDistributive"
 
-instance PropertyTag Commutativity where hasProperty _ = Just True
-instance PropertyTag NoCommutativity where hasProperty _ = Just False
-instance PropertyTag UnknownCommutativity where hasProperty _ = Nothing
+instance Show AnnihilationValue where
+   show UnknownAnnihilating = ""
+   show Annihilating = "Annihilating"
+   show NonAnnihilating = "NonAnnihilating"
+   show AllAnnihilating = "Great Master Cthulhu"
 
+-- |A grouplike structure composed of two grouplike structures.
+class Ringlike r where
+   getStruct1 :: Grouplike g1 => r (g1 el t1) (g2 el t2) t -> (g1 el t1)
+   getStruct2 :: Grouplike g2 => r (g1 el t1) (g2 el t2) t -> (g2 el t2)
 
-data Inverse a = Inverse{getInv::a} deriving (Show, Eq, Read)
-data NoInverse a = NoInverse deriving (Show, Eq, Read)
-data UnknownInverse a = UnknownInverse deriving (Show, Eq, Read)
+--Individual traits which compose into the known structures (Rigs, Rings, Rngs, etc.)
 
-instance ElementTag Inverse where getElement = Just .  getInv
-instance ElementTag NoInverse where getElement _ = Nothing
-instance ElementTag UnknownInverse where getElement _ = Nothing
-
--- |A grouplike structure with a binary operation.
-class Grouplike s where
-   op :: s el t -> Bin el
-
---Individual traits which compose into the known structures (Monoids, Groups, etc.)
-
--- |A commutative grouplike structure: a `op` b = b `op` a.
-class Grouplike s => Commutative s where
--- |A associative grouplike structure: (a `op` b) `op` c = a `op` (b `op` c).
-class Grouplike s => Associative s where
--- |An idempotent grouplike structure: x `op` x = x
-class Grouplike s => Idempotent s where
--- |A grouplike structure with a unit element U: a `op` U = U `op` a = a 
-class Grouplike s => HasUnitElement s where
-   ident :: s el t -> el
--- |A grouplike structure where there exists a left divider l for
---  every pair of elements a,b: a `op` l = b
-class Grouplike s => LeftDivisible s where
-   lDiv :: s el t -> Bin el
--- |A grouplike structure where there exists a right divider r for
---  every pair of elements a,b: r `op` a = b
-class Grouplike s => RightDivisible s where
-   rDiv :: s el t -> Bin el
--- |A grouplike structure which has both left and right dividers.
-class (Grouplike s, LeftDivisible s, RightDivisible s) => Divisible s where
--- |A grouplike structure where every element a has an inverse ia,
---  which reduces a to the unit element U: a `op` ia = U
-class (Grouplike s, HasUnitElement s) => Invertible s where
-   inverse :: s el t -> Un el
+-- |A ringlike structure with left-distributivity: @a `op2` (b `op1` c) = (a `op2` b) `op1` (a `op2` c)@
+class Ringlike s => LeftDistributive s where
+-- |A ringlike structure with right-distributivity: @(b `op1` c) `op2` a = (b `op2` a) `op1` (c `op2` a)@
+class Ringlike s => RightDistributive s where
+-- |A ringlike structure where the unit element the unit element of the first structure (@0@) annihilates the operation of the second (@*@), i.e.
+--  @0 * x = 0 * x = 0@
+class Ringlike s => Annihilating s where
