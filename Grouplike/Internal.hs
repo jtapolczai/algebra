@@ -169,7 +169,7 @@ class (Monoid s, Commutative s) => CommutativeMonoid s where
 -- |A magma which is both a monoid and a loop. Every element has an inverse.
 class (Loop s, Monoid s, Invertible s) => Group s where
 -- |A commutative group.
-class (Group s) => CommutativeGroup s where
+class (CommutativeMonoid s, Group s) => CommutativeGroup s where
 -- |A commutative and idempotent semigroup. Its operation is commonly the meet or the join or two elements.
 class (Semigroup s, Commutative s, Idempotent s) => Semilattice s
 -- |A semilattice with a unit element.

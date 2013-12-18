@@ -1,18 +1,20 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 {-|
-  Contains primitive traits for grouplike algebraic structures. The existence of
-  any trait is three-valued: it can be asserted (Commutativity, Associativity, etc.),
-  explicitly denied (NoCommutativity, NoAssociativity, etc.), or left unspecified
-  (UnknownCommutativity, UnknownAssociativity, etc.), which is the default case.
+  Contains primitive traits for grouplike algebraic structures. The generally, traits are
+  three-valued: they can be asserted (Commutative, Associative, etc.),
+  explicitly denied (NonCommutative, NoAssociative, etc.), or left unspecified
+  (UnknownCommutative, UnknownAssociative, etc.), which is the default case.
 
-  For a traits, it three values are distinct types, but they implement
-  the common interfaces 'PropertyTag' (for yes/no traits like commutativity) or
-  'ElementTag' (for traits that has store some information, like 'UnitElement').
+  Values are implemented tag, where each possible is a distinct type of
+  tag. All values of a trait implement a common type class, however, which can be
+  used them into a common sum type enum.
 
   The following traits exist:
 
   [@Commutative@] @for all a, b: a + b = b + a@
+
+  [@Anticommutative] @for all a,b and the inverse function ': a+b = (b+a)'@
 
   [@Associative@] @for all a, b, c: (a + b) + c = a + (b + c)@
 
@@ -56,12 +58,13 @@ import Templates
 -- for that particular constructor.
 
 $(makeEnumTag "Commutativity" ["Commutative", "AntiCommutative", "NonCommutative", "UnknownCommutative"])
-$(makeEnumTag "Associativity" ["Associative", "JacobiAssociative", "NonAssociative", "UnknownAssociative"])
+$(makeEnumTag "Associativity" ["Associative", "NonAssociative", "UnknownAssociative"])
 $(makeEnumTag "Idempotence" ["Idempotent", "NonIdempotent", "UnknownIdempotent"])
 $(makeContentTag "UnitElement" [("UnitElement", True), ("NoUnitElement", False), ("UnknownUnitElement", False)])
 $(makeContentTag "LeftDivider" [("LeftDivider", True), ("NoLeftDivider", False), ("UnknownLeftDivider", False)])
 $(makeContentTag "RightDivider" [("RightDivider", True), ("NoRightDivider", False), ("UnknownRightDivider", False)])
 $(makeContentTag "Inverse" [("Inverse", True), ("NoInverse", False), ("UnknownInverse", False)])
+
 
 instance Show CommutativityValue where
    show UnknownCommutative = ""
@@ -106,6 +109,8 @@ class Grouplike s where
 
 -- |A commutative grouplike structure: a `op` b = b `op` a.
 class Grouplike s => Commutative s where
+-- |An anticommutative grouplike structure: a `op` b = inv (b `op` a).
+class Grouplike s => Anticommutative s where
 -- |A associative grouplike structure: (a `op` b) `op` c = a `op` (b `op` c).
 class Grouplike s => Associative s where
 -- |An idempotent grouplike structure: x `op` x = x

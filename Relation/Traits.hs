@@ -1,3 +1,30 @@
+{-|
+  Contains primitive traits for binary (endo)relations. The existence of
+  any trait is three-valued: it can be asserted (Commutativity, Associativity, etc.),
+  explicitly denied (NoCommutativity, NoAssociativity, etc.), or left unspecified
+  (UnknownCommutativity, UnknownAssociativity, etc.), which is the default case.
+
+  For a traits, it three values are distinct types, but they implement
+  the common interfaces 'PropertyTag' (for yes/no traits like commutativity) or
+  'ElementTag' (for traits that has store some information, like 'UnitElement').
+
+  The following traits exist:
+
+  [@Commutative@] @for all a, b: a + b = b + a@
+
+  [@Associative@] @for all a, b, c: (a + b) + c = a + (b + c)@
+
+  [@Idempotent@] @for all a: a + a = a@
+
+  [@UnitElement@] @for all a and the unit element 1: a + 1 = 1 + a = a@
+
+  [@LeftDivisible@] @for all a, b there exists x: x + a = b@
+
+  [@RightDivisible@] @for all a, b there exists y: a + y = b@
+
+  [@Invertible@] @for all a, their inverse a' and the unit element 1: a + a' = a' + a = 1@
+
+-}
 module Relation.Traits where
 
 {-# LANGUAGE KindSignatures #-}

@@ -1,3 +1,4 @@
+{-# LANGUAGE KindSignatures #-}
 
 {-|
   Contains primitive traits for grouplike algebraic structures. The existence of
@@ -36,6 +37,13 @@ import Templates
 $(makeEnumTag "LeftDistributivity" ["LeftDistributive", "NonLeftDistributive", "UnknownLeftDistributive"])
 $(makeEnumTag "RightDistributivity" ["RightDistributive", "NonRightDistributive", "UnknownRightDistributive"])
 $(makeEnumTag "Annihilation" ["Annihilating", "NonAnnihilating", "UnknownAnnihilating", "AllAnnihilating"])
+$(makeEnumTag "JacobiIdentity" ["JacobiIdentity", "NoJacobiIdentity", "UnknownJacobiIdentity"])
+$(makeEnumTag "Bilinearity" ["Bilinear", "NoBilinear", "UnknownBilinear"])
+$(makeEnumTag "Eliminating" ["Eliminating", "NoEliminating", "UnknownEliminating"])
+
+-- $(makeEnumTag "" ["", "No", "Unknown"])
+
+
 
 instance Show LeftDistributivityValue where
    show UnknownLeftDistributive = ""
@@ -53,10 +61,25 @@ instance Show AnnihilationValue where
    show NonAnnihilating = "NonAnnihilating"
    show AllAnnihilating = "Great Master Cthulhu"
 
+instance Show JacobiIdentityValue where
+   show UnknownJacobiIdentity = ""
+   show JacobiIdentity = "JacobiIdentity"
+   show NoJacobiIdentity = "NoJacobiIdentity"
+
+instance Show BilinearityValue where
+   show UnknownBilinear = ""
+   show Bilinear = "Bilinear"
+   show NoBilinear = "NoBilinear"
+
+instance Show EliminatingValue where
+   show UnknownEliminating = ""
+   show Eliminating = "Eliminating"
+   show NoEliminating = "NoEliminating"
+
 -- |A grouplike structure composed of two grouplike structures.
 class Ringlike r where
-   getStruct1 :: Grouplike g1 => r (g1 el t1) (g2 el t2) t -> (g1 el t1)
-   getStruct2 :: Grouplike g2 => r (g1 el t1) (g2 el t2) t -> (g2 el t2)
+   getStruct1 :: Grouplike g1 => r g1 g2 el t1 t2 -> (g1 el t1)
+   getStruct2 :: Grouplike g2 => r g1 g2 el t1 t2 -> (g2 el t2)
 
 --Individual traits which compose into the known structures (Rigs, Rings, Rngs, etc.)
 
@@ -64,6 +87,16 @@ class Ringlike r where
 class Ringlike s => LeftDistributive s where
 -- |A ringlike structure with right-distributivity: @(b `op1` c) `op2` a = (b `op2` a) `op1` (c `op2` a)@
 class Ringlike s => RightDistributive s where
+-- |A ringlike structure with both and left- and right-divisibility.
+class (LeftDistributive s, RightDistributive s) => Distributive s where
 -- |A ringlike structure where the unit element the unit element of the first structure (@0@) annihilates the operation of the second (@*@), i.e.
 --  @0 * x = 0 * x = 0@
 class Ringlike s => Annihilating s where
+-- |A ringlike structure which satisfies the Jacobi identity:
+--  @(a `op2` (b `op2` c)) `op1` (b `op2` (c `op2` a)) `op1` (c `op2` (a `op2` b)) = 0@
+class Ringlike s => JacobiIdentity s where
+-- |A ringlike structure with bilinearity: @(a `op1` b) `op2` c = (a `op2` c) `op1` (b `op2` c)@
+class Ringlike s => Bilinear s where
+-- |A ringlike structure in which it holds that @a `op2` a = 0@.
+--  Note: 0 is the unit element of the FIRST operation.
+class Ringlike s => Eliminating s where
