@@ -108,6 +108,7 @@ module Grouplike.Internal (
    BoundedSemilattice,
 
    -- * Shorthand type synonyms for common structures
+   DynamicGroupStruct,
    MagmaStruct,
    QuasigroupStruct,
    LoopStruct,
@@ -154,6 +155,7 @@ module Grouplike.Internal (
 import Control.Applicative
 import Grouplike.Traits
 import Helper
+import Templates
 
 
 -- |A magma with left and right dividers.
@@ -189,6 +191,8 @@ data GrouplikeStruct c a i u l r inv el t =
                   -- |Gets the tag of the structure.
                   gTag::t}
 
+-- Show-instance for GrouplikeStruct
+
 instance (CommutativityTag c,
           AssociativityTag a,
           IdempotenceTag i,
@@ -198,7 +202,7 @@ instance (CommutativityTag c,
           InverseTag inv,
           Show el,
           Show t) => Show (GrouplikeStruct c a i u l r inv el t) where
-   show struct = "Algebra [" ++ show t ++ "] (" ++ implode ", " traits ++ ")"
+   show struct = "Grouplike [" ++ show t ++ "] (" ++ implode ", " traits ++ ")"
       where cm = getCommutativityValue $ gCommutativity struct
             as = getAssociativityValue $ gAssociativity struct
             ie = getIdempotenceValue $ gIdempotence struct
@@ -210,6 +214,7 @@ instance (CommutativityTag c,
             traits = filter (not . null) $ [show cm, show as, show ie, show ui, show ld, show rd, show iv]
 
 
+-- Instances for primitive traits
 
 instance Grouplike (GrouplikeStruct c a i u l r inv) where
   op = gOperation
@@ -226,6 +231,8 @@ instance Divisible (GrouplikeStruct c a i u TagLeftDivider TagRightDivider inv) 
 instance Invertible (GrouplikeStruct c a i TagUnitElement l r TagInverse) where
    inverse = (\(TagInverse a) -> a) . gInverse
 
+-- Instances for algebraic structures
+
 instance Quasigroup (GrouplikeStruct c a i u TagLeftDivider TagRightDivider inv) where
 instance Semigroup (GrouplikeStruct c TagAssociative i u l r inv) where
 instance Loop (GrouplikeStruct c a i TagUnitElement TagLeftDivider TagRightDivider inv) where
@@ -237,27 +244,32 @@ instance Semilattice (GrouplikeStruct TagCommutative TagAssociative TagIdempoten
 instance BoundedSemilattice (GrouplikeStruct TagCommutative TagAssociative TagIdempotent TagUnitElement l r inv) where
 
 -- |Type synonym for a dynamic structure which doesn't have static checks on its properties.
-type DynamicStruct el t = GrouplikeStruct CommutativityValue AssociativityValue IdempotenceValue UnitElementValue LeftDividerValue RightDividerValue InverseValue el t
+type DynamicGroupStruct el t = GrouplikeStruct CommutativityValue AssociativityValue IdempotenceValue UnitElementValue LeftDividerValue RightDividerValue InverseValue el t
+
 -- |Type synomym for a magma.
-type MagmaStruct el t = GrouplikeStruct TagUnknownCommutative TagUnknownAssociative TagUnknownIdempotent TagUnknownUnitElement TagUnknownLeftDivider TagUnknownRightDivider TagUnknownInverse el t
+--type MagmaStruct el t = GrouplikeStruct TagUnknownCommutative TagUnknownAssociative TagUnknownIdempotent TagUnknownUnitElement TagUnknownLeftDivider TagUnknownRightDivider TagUnknownInverse el t
+$(makeStructureTypeSynonym "MagmaStruct" "GrouplikeStruct" [] grouplikeTraits ["el", "t"])
+
 -- |Type synonym for a quasigroup.
-type QuasigroupStruct el t = GrouplikeStruct TagUnknownCommutative TagUnknownAssociative TagUnknownIdempotent TagUnknownUnitElement TagLeftDivider TagRightDivider TagUnknownInverse el t
+$(makeStructureTypeSynonym "QuasigroupStruct" "GrouplikeStruct" ["LeftDivider", "RightDivider"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a semigroup.
-type SemigroupStruct el t = GrouplikeStruct TagUnknownCommutative TagAssociative TagUnknownIdempotent TagUnknownUnitElement TagUnknownLeftDivider TagUnknownRightDivider TagUnknownInverse el t
+$(makeStructureTypeSynonym "SemigroupStruct" "GrouplikeStruct" ["Associative"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a loop.
-type LoopStruct el t = GrouplikeStruct TagUnknownCommutative TagUnknownAssociative TagUnknownIdempotent TagUnitElement TagLeftDivider TagRightDivider TagUnknownInverse el t
+$(makeStructureTypeSynonym "LoopStruct" "GrouplikeStruct" ["UnitElement", "LeftDivider", "RightDivider"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a monoid.
-type MonoidStruct el t = GrouplikeStruct TagUnknownCommutative TagAssociative TagUnknownIdempotent TagUnitElement TagUnknownLeftDivider TagUnknownRightDivider TagUnknownInverse el t
+$(makeStructureTypeSynonym "MonoidStruct" "GrouplikeStruct" ["Associative", "UnitElement"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a commutative monoid.
-type CommutativeMonoidStruct el t = GrouplikeStruct TagCommutative TagAssociative TagUnknownIdempotent TagUnitElement TagUnknownLeftDivider TagUnknownRightDivider TagUnknownInverse el t
+$(makeStructureTypeSynonym "CommutativeMonoidStruct" "GrouplikeStruct" ["Commutative", "Associative", "UnitElement"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a group.
-type GroupStruct el t = GrouplikeStruct TagUnknownCommutative TagAssociative TagUnknownIdempotent TagUnitElement TagLeftDivider TagRightDivider TagInverse el t
+$(makeStructureTypeSynonym "GroupStruct" "GrouplikeStruct" ["Associative", "UnitElement", "LeftDivider", "RightDivider", "Inverse"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a commutative group.
-type CommutativeGroupStruct el t = GrouplikeStruct TagCommutative TagAssociative TagUnknownIdempotent TagUnitElement TagLeftDivider TagRightDivider TagInverse el t
+$(makeStructureTypeSynonym "CommutativeGroupStruct" "GrouplikeStruct" ["Commutative", "Associative", "UnitElement", "LeftDivider", "RightDivider", "Inverse"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a semilattice.
-type SemilatticeStruct el t = GrouplikeStruct TagCommutative TagAssociative TagIdempotent TagUnknownUnitElement TagUnknownLeftDivider TagUnknownRightDivider TagUnknownInverse el t
+$(makeStructureTypeSynonym "SemilatticeStruct" "GrouplikeStruct" ["Commutative", "Associative", "Idempotent"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a bounded semilattice.
-type BoundedSemilatticeStruct el t = GrouplikeStruct TagCommutative TagAssociative TagIdempotent TagUnitElement TagUnknownLeftDivider TagUnknownRightDivider TagUnknownInverse el t
+$(makeStructureTypeSynonym "BoundedSemilatticeStruct" "GrouplikeStruct" ["Commutative", "Associative", "Idempotent", "UnitElement"] grouplikeTraits ["el", "t"])
+
+-- Addition of individual traits to a structure
 
 -- |Adds the promise of commutativity to a structure.
 addCommutativity :: GrouplikeStruct c a i u l r inv el t -> GrouplikeStruct TagCommutative a i u l r inv el t
@@ -286,6 +298,9 @@ addRightDivider rd (GrouplikeStruct c a i u l _ inv el t) = GrouplikeStruct c a 
 -- |Adds an invere function to a structure.
 addInverse :: Un el -> GrouplikeStruct c a i u l r inv el t -> GrouplikeStruct c a i u l r TagInverse el t
 addInverse i' (GrouplikeStruct c a i u l r _ el t) = GrouplikeStruct c a i u l r (TagInverse i') el t
+
+
+-- Creation of structures
 
 -- |Creates a magma.
 makeMagma :: Bin el -- ^The structure's binary operation.
@@ -364,7 +379,7 @@ makeBoundedSemilattice o ui t = addUnitElement ui $ makeSemilattice o t
 
 -- |Turns a statically typechecked grouplike structure into a one without it.
 --  Whereas the values the type parameters can take in the input will be unrelated
---  (e.g. @TagCommutative@ and @TagNonCommutative@ are distinct and incompatible types)
+--  (e.g. @TagCommutative@ and @TagNonCommutative@ are distinct and incompatible types),
 --  the type parameters int the output will belong to sum types
 --  (@Commutative@ and @NonCommutative@ are both constructors of @CommutativityValue@).
 --  The resulting structure will thereby be able to bypass all static type checks and
@@ -376,18 +391,18 @@ makeDynamic :: (CommutativityTag c,
                 LeftDividerTag l,
                 RightDividerTag r,
                 InverseTag inv)
-                 => GrouplikeStruct c a i u l r inv el t -> DynamicStruct el t
-makeDynamic g =
-  (GrouplikeStruct (isCommutative g)
-                   (isAssociative g)
-                   (isIdempotent g)
-                   (getUnitElement g)
-                   (getLeftDivider g)
-                   (getRightDivider g)
-                   (getInverse g)
-                   (gOperation g)
-                   (gTag g))
+            => GrouplikeStruct c a i u l r inv el t -> DynamicGroupStruct el t
+makeDynamic g = (GrouplikeStruct (isCommutative g)
+                                 (isAssociative g)
+                                 (isIdempotent g)
+                                 (getUnitElement g)
+                                 (getLeftDivider g)
+                                 (getRightDivider g)
+                                 (getInverse g)
+                                 (gOperation g)
+                                 (gTag g))
 
+-- Typesafe accessor functions for structures
 
 -- |Returns whether the structure is commutative.
 isCommutative :: (CommutativityTag c) => GrouplikeStruct c a i u l r inv el t -> CommutativityValue

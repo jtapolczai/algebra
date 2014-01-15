@@ -1,20 +1,22 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 {-|
-  Contains primitive traits for grouplike algebraic structures. The generally, traits are
-  three-valued: they can be asserted (Commutative, Associative, etc.),
-  explicitly denied (NonCommutative, NoAssociative, etc.), or left unspecified
-  (UnknownCommutative, UnknownAssociative, etc.), which is the default case.
+  Contains primitive traits for grouplike algebraic structures. The existence of
+  is generally True/False, but more than two values are also possible, and
+  some values may carry values or functions as "payload": a "unit element" trait
+  might, for example, contain the value of the unit element, and a "uniquely factorizable"
+  trait might carry a factorization function.
 
-  Values are implemented tag, where each possible is a distinct type of
-  tag. All values of a trait implement a common type class, however, which can be
-  used them into a common sum type enum.
+  For any trait, its values are distinct types, but each is an instance
+  of a class which provides a method for converting these values into
+  a common sum type. This sum type can then be used to perform reflection
+  about the traits of an algebraic structure at runtime, or to put
+  algebraic structures with different traits into the same collection.
 
   The following traits exist:
 
-  [@Commutative@] @for all a, b: a + b = b + a@
-
-  [@Anticommutative] @for all a,b and the inverse function ': a+b = (b+a)'@
+  [@Commutative@] Commutative: @for all a, b: a + b = b + a@. AntiCommutative:
+  @for all a,b and the inverse function ': a+b = (b+a)'@.
 
   [@Associative@] @for all a, b, c: (a + b) + c = a + (b + c)@
 
@@ -57,49 +59,45 @@ import Templates
 -- where each option has type (String, Bool). True in the second component indicates the existence of data
 -- for that particular constructor.
 
-$(makeEnumTag "Commutativity" ["Commutative", "AntiCommutative", "NonCommutative", "UnknownCommutative"])
-$(makeEnumTag "Associativity" ["Associative", "NonAssociative", "UnknownAssociative"])
-$(makeEnumTag "Idempotence" ["Idempotent", "NonIdempotent", "UnknownIdempotent"])
-$(makeContentTag "UnitElement" [("UnitElement", True), ("NoUnitElement", False), ("UnknownUnitElement", False)])
-$(makeContentTag "LeftDivider" [("LeftDivider", True), ("NoLeftDivider", False), ("UnknownLeftDivider", False)])
-$(makeContentTag "RightDivider" [("RightDivider", True), ("NoRightDivider", False), ("UnknownRightDivider", False)])
-$(makeContentTag "Inverse" [("Inverse", True), ("NoInverse", False), ("UnknownInverse", False)])
+$(makeEnumTag "Commutativity" ["Commutative", "AntiCommutative", "UnknownCommutative"])
+$(makeEnumTag "Associativity" ["Associative", "UnknownAssociative"])
+$(makeEnumTag "Idempotence" ["Idempotent", "UnknownIdempotent"])
+$(makeContentTag "UnitElement" [("UnitElement", True), ("UnknownUnitElement", False)])
+$(makeContentTag "LeftDivider" [("LeftDivider", True), ("UnknownLeftDivider", False)])
+$(makeContentTag "RightDivider" [("RightDivider", True), ("UnknownRightDivider", False)])
+$(makeContentTag "Inverse" [("Inverse", True), ("UnknownInverse", False)])
 
+grouplikeTraits = ["Commutative", "Associative", "Idempotent", "UnitElement",
+                   "LeftDivider", "RightDivider", "Inverse"]
 
 instance Show CommutativityValue where
    show UnknownCommutative = ""
    show Commutative = "Commutative"
-   show NonCommutative = "NonCommutative"
+   show AntiCommutative = "AntiCommutative"
 
 instance Show AssociativityValue where
    show UnknownAssociative = ""
    show Associative = "Associative"
-   show NonAssociative = "NonAssociative"
 
 instance Show IdempotenceValue where
    show UnknownIdempotent = ""
    show Idempotent = "Idempotent"
-   show NonIdempotent = "NonIdempotent"
 
 instance Show el => Show (UnitElementValue el) where
    show UnknownUnitElement = ""
    show (UnitElement el) = "UnitElement " ++ show el
-   show NoUnitElement = "NoUnitElement"
 
 instance Show (LeftDividerValue el) where
    show UnknownLeftDivider = ""
    show (LeftDivider el) = "LeftDivider"
-   show NoLeftDivider = "NoLeftDivider"
 
 instance Show (RightDividerValue el) where
    show UnknownRightDivider = ""
    show (RightDivider el) = "RightDivider"
-   show NoRightDivider = "NoRightDivider"
 
 instance Show (InverseValue el) where
    show UnknownInverse = ""
    show (Inverse el) = "Inverse"
-   show NoInverse = "NoInverse"
 
 -- |A grouplike structure with a binary operation.
 class Grouplike s where
