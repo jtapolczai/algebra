@@ -231,6 +231,12 @@ addJacobiIdentity (RinglikeStruct dl dr an _ eli zp pp un euc ab cp g1 g2) = Rin
 -- |Adds the eliminating property to a structure.
 addEliminating (RinglikeStruct dl dr an ja _ zp pp un euc ab cp g1 g2) = RinglikeStruct dl dr an ja TagEliminating zp pp un euc ab cp g1 g2
 
+-- |Adds the zero product property to a structure.
+addZeroProduct (RinglikeStruct dl dr an ja eli _ pp un euc ab cp g1 g2) = RinglikeStruct dl dr an ja eli TagZeroProduct pp un euc ab cp g1 g2
+
+-- |Adds the positive product property to a structure.
+addPositiveProduct (RinglikeStruct dl dr an ja eli zp _ un euc ab cp g1 g2) = RinglikeStruct dl dr an ja eli zp TagPositiveProduct un euc ab cp g1 g2
+
 -- |Adds unique factorization to a structure: every element must be able to be uniquely decomposed into its prime products.
 addUniquelyFactorizable factor (RinglikeStruct dl dr an ja eli zp pp _ euc ab cp g1 g2) = RinglikeStruct dl dr an ja eli zp pp (TagUniquelyFactorizable factor) euc ab cp g1 g2
 
