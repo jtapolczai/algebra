@@ -1,5 +1,6 @@
 algebra
 =======
+***NOTE: This package is very much experimental / a work in progress! Use at your own peril, ye who thread here.***
 
 Provides common, customizable algebraic structures (grouplike & ringlike, relations, modules, vector spaces) and operations on them in Haskell. The algebraic structures, instead of being immaterial type classes that types like `Int` and `Bool` implement, are themselves objects that can be passed around, manipulated, and switched out when desired. In addition to predefined structures like monoids and mings, the user can also create his own by mixing and matching from list of predefined **traits** like `Commutative`, `Distributive`, `Idempotent`, etc.
 
