@@ -19,14 +19,9 @@
 
   The following traits exist:
 
-  [@LeftDistributivity@] @for all a, b, c: a * (b + c) = a*c + b*c@.
-
-  [@RightDistributivity@] @for all a, b, c: (a + b) * c = a*c + b*c@.
-
-  [@LeftAnnihilation@] @0@ annihilates @*@ from the left: @for all a: a * 0 = 0@.
-
-  [@RightAnnihilation@] @0@ annihilates @*@ from the left: @for all a: a * 0 = 0@.
-
+  [@LeftDistributivity@] LeftDistributive: @for all a, b, c: a * (b + c) = a*c + b*c@.
+  RightDistributive: @for all a, b, c: (a + b) * c = a*c + b*c@. Distributive: both left-
+  and right-distributivity hold.
 
   [@Annihilation@] LeftAnnihilating: @0@ annihilates @*@ from the left: @for all a: a * 0 = 0@.
   RightAnnihilating: @0@ annihilates @*@ from the right: @for all a: 0 * a = 0@. Annihilating: both
@@ -60,8 +55,7 @@ import Helper
 import Templates
 
 
-$(makeEnumTag "LeftDistributivity" ["LeftDistributive", "UnknownLeftDistributive"])
-$(makeEnumTag "RightDistributivity" ["RightDistributive", "UnknownRightDistributive"])
+$(makeEnumTag "Distributivity" ["Distributive" , "LeftDistributive", "RightDistributive", "UnknownDistributive"])
 $(makeEnumTag "Annihilation" ["Annihilating", "LeftAnnihilating", "RightAnnihilating", "UnknownAnnihilating"])
 $(makeEnumTag "JacobiIdentity" ["JacobiIdentity", "UnknownJacobiIdentity"])
 $(makeEnumTag "Eliminating" ["Eliminating", "UnknownEliminating"])
@@ -72,17 +66,15 @@ $(makeEnumTag "Euclidean" ["Euclidean", "UnknownEuclidean"])
 $(makeEnumTag "Absorbing" ["Absorbing", "UnknownAbsorbing"])
 $(makeContentTag "Complement" [("Complement", True), ("UnknownComplement", False)])
 
-ringlikeTraits = ["LeftDistributive", "RightDistributive", "Annihilating",
+ringlikeTraits = ["Distributive", "Annihilating",
                   "JacobiIdentity", "Eliminating", "ZeroProduct", "PositiveProduct",
                   "UniquelyFactorizable", "Euclidean", "Absorbing", "Complement"]
 
-instance Show LeftDistributivityValue where
-   show UnknownLeftDistributive = ""
+instance Show DistributivityValue where
+   show UnknownDistributive = ""
    show LeftDistributive = "LeftDistributive"
-
-instance Show RightDistributivityValue where
-   show UnknownRightDistributive = ""
    show RightDistributive = "RightDistributive"
+   show Distributive = "Distributive"
 
 instance Show AnnihilationValue where
    show UnknownAnnihilating = ""
@@ -135,8 +127,12 @@ class Ringlike s => LeftDistributive s where
 class Ringlike s => RightDistributive s where
 -- |A ringlike structure with both and left- and right-divisibility.
 class (LeftDistributive s, RightDistributive s) => Distributive s where
--- |An annihilating ringlike structure.
-class Ringlike s => Annihilating s where
+-- |A left-annihilating ringlike structure.
+class Ringlike s => LeftAnnihilating s where
+-- |A right-annihilating ringlike structure.
+class Ringlike s => RightAnnihilating s where
+-- |A left- and right-annihilating ringlike structure.
+class (LeftAnnihilating s, RightAnnihilating s) => Annihilating s where
 -- |A ringlike structure which satisfies the Jacobi identity.
 class Ringlike s => JacobiIdentity s where
 -- |A ringlike structure in which multiplication of an element with itself result in the

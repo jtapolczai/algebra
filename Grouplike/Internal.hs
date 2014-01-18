@@ -248,26 +248,26 @@ type DynamicGroupStruct el t = GrouplikeStruct CommutativityValue AssociativityV
 
 -- |Type synomym for a magma.
 --type MagmaStruct el t = GrouplikeStruct TagUnknownCommutative TagUnknownAssociative TagUnknownIdempotent TagUnknownUnitElement TagUnknownLeftDivider TagUnknownRightDivider TagUnknownInverse el t
-$(makeStructureTypeSynonym "MagmaStruct" "GrouplikeStruct" [] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "MagmaStruct" "GrouplikeStruct" [] grouplikeTraits ["el", "t"])
 
 -- |Type synonym for a quasigroup.
-$(makeStructureTypeSynonym "QuasigroupStruct" "GrouplikeStruct" ["LeftDivider", "RightDivider"] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "QuasigroupStruct" "GrouplikeStruct" ["LeftDivider", "RightDivider"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a semigroup.
-$(makeStructureTypeSynonym "SemigroupStruct" "GrouplikeStruct" ["Associative"] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "SemigroupStruct" "GrouplikeStruct" ["Associative"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a loop.
-$(makeStructureTypeSynonym "LoopStruct" "GrouplikeStruct" ["UnitElement", "LeftDivider", "RightDivider"] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "LoopStruct" "GrouplikeStruct" ["UnitElement", "LeftDivider", "RightDivider"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a monoid.
-$(makeStructureTypeSynonym "MonoidStruct" "GrouplikeStruct" ["Associative", "UnitElement"] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "MonoidStruct" "GrouplikeStruct" ["Associative", "UnitElement"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a commutative monoid.
-$(makeStructureTypeSynonym "CommutativeMonoidStruct" "GrouplikeStruct" ["Commutative", "Associative", "UnitElement"] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "CommutativeMonoidStruct" "GrouplikeStruct" ["Commutative", "Associative", "UnitElement"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a group.
-$(makeStructureTypeSynonym "GroupStruct" "GrouplikeStruct" ["Associative", "UnitElement", "LeftDivider", "RightDivider", "Inverse"] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "GroupStruct" "GrouplikeStruct" ["Associative", "UnitElement", "LeftDivider", "RightDivider", "Inverse"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a commutative group.
-$(makeStructureTypeSynonym "CommutativeGroupStruct" "GrouplikeStruct" ["Commutative", "Associative", "UnitElement", "LeftDivider", "RightDivider", "Inverse"] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "CommutativeGroupStruct" "GrouplikeStruct" ["Commutative", "Associative", "UnitElement", "LeftDivider", "RightDivider", "Inverse"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a semilattice.
-$(makeStructureTypeSynonym "SemilatticeStruct" "GrouplikeStruct" ["Commutative", "Associative", "Idempotent"] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "SemilatticeStruct" "GrouplikeStruct" ["Commutative", "Associative", "Idempotent"] grouplikeTraits ["el", "t"])
 -- |Type synonym for a bounded semilattice.
-$(makeStructureTypeSynonym "BoundedSemilatticeStruct" "GrouplikeStruct" ["Commutative", "Associative", "Idempotent", "UnitElement"] grouplikeTraits ["el", "t"])
+$(makeStructureTypeSynonym' "BoundedSemilatticeStruct" "GrouplikeStruct" ["Commutative", "Associative", "Idempotent", "UnitElement"] grouplikeTraits ["el", "t"])
 
 -- Addition of individual traits to a structure
 
@@ -430,7 +430,7 @@ getRightDivider = getRightDividerValue . gRightDivider
 
 -- |Returns the left divider and right divider functions of the structure, if they exists.
 getDividers :: (LeftDividerTag l, RightDividerTag r) => GrouplikeStruct c a i u l r inv el t -> (LeftDividerValue (Bin el), RightDividerValue (Bin el))
-getDividers = liftA2 (,) (getLeftDividerValue . gLeftDivider) (getRightDividerValue . gRightDivider)
+getDividers = liftA2 (,) getLeftDivider getRightDivider
 
 -- |Returns the inverse function of the structure, if it exists.
 getInverse :: (InverseTag inv) => GrouplikeStruct c a i u l r inv el t -> InverseValue (Un el)

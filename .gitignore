@@ -1,6 +1,6 @@
 *.hi
 *.ho
 dist/
-X.hs
+GHCTest.hs
 make_doc.bat
 *.stackdump
