@@ -149,7 +149,7 @@ class (CommutativeGroup a, Anticommutative b, Distributive r, JacobiIdentity r,
 
 -- |A general ringlike structure which underlies
 --  all the special cases (Rings, Fields, etc.)
-data RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 =
+data RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el =
    RinglikeStruct{rDistributive::d,
                   rAnnihiliate::an,
                   rJacobiIdentity::ja,
@@ -160,8 +160,8 @@ data RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 =
                   rEuclidean::euc,
                   rAbsorbing::ab,
                   rComplement::cp (Un el),
-                  rStruct1::g1 el t1,
-                  rStruct2::g2 el t2}
+                  rStruct1::g1 el,
+                  rStruct2::g2 el}
 
 -- Show-instance for RinglikeStruct
 
@@ -176,10 +176,8 @@ instance (DistributivityTag d,
           AbsorbingTag ab,
           ComplementTag cp,
           Show el,
-          Show (g1 el t1),
-          Show (g2 el t2),
-          Show t1,
-          Show t2) => Show (RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2) where
+          Show (g1 el),
+          Show (g2 el)) => Show (RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el) where
    show struct = printf "Ringlike (g1: %, g2: %) (%)" [show g1, show g2, implode ", " traits]
       where g1 = rStruct1 struct
             g2 = rStruct2 struct
@@ -249,66 +247,66 @@ instance (CommutativeGroup a, CommutativeGroup b) => Field (RinglikeStruct TagDi
 instance (CommutativeGroup a, Anticommutative b) => LieRing (RinglikeStruct TagDistributive an TagJacobiIdentity TagEliminating zp pp un euc ab cp) a b
 
 -- |Type synonym for a dynamic ringlike structure which doesn't have static checks on its properties.
-type DynamicRingStruct g1 g2 el t1 t2 = RinglikeStruct DistributivityValue AnnihilationValue JacobiIdentityValue EliminatingValue ZeroProductValue PositiveProductValue UniquelyFactorizableValue EuclideanValue AbsorbingValue ComplementValue g1 g2 el t1 t2
+type DynamicRingStruct g1 g2 el = RinglikeStruct DistributivityValue AnnihilationValue JacobiIdentityValue EliminatingValue ZeroProductValue PositiveProductValue UniquelyFactorizableValue EuclideanValue AbsorbingValue ComplementValue g1 g2 el
 
 -- |Type synonym for a basic ringlike structure.
-$(makeStructureTypeSynonym "BasicRinglikeStruct" "RinglikeStruct" [] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+$(makeStructureTypeSynonym "BasicRinglikeStruct" "RinglikeStruct" [] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a lattice.
 $(makeStructureTypeSynonym' "LatticeStruct" "RinglikeStruct"
   ["Distributive",
-   "Annihilating"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Annihilating"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a bounded lattice.
 $(makeStructureTypeSynonym' "BoundedLatticeStruct" "RinglikeStruct"
   ["Distributive",
-   "Annihilating"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Annihilating"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a Boolean ring.
 $(makeStructureTypeSynonym' "BooleanLatticeStruct" "RinglikeStruct"
   ["Distributive",
    "Annihilating",
    "Absorbing",
-   "Complement"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Complement"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a semiring.
 $(makeStructureTypeSynonym' "SemiringStruct" "RinglikeStruct"
   ["Distributive",
-   "Annihilating"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Annihilating"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a right near ring.
 $(makeStructureTypeSynonym "RightNearRingStruct" "RinglikeStruct"
   [("Distributive", "RightDistributive"),
-   ("Annihilating", "RightAnnihilating")] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   ("Annihilating", "RightAnnihilating")] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a left near ring.
 $(makeStructureTypeSynonym "LeftNearRingStruct" "RinglikeStruct"
   [("Distributive", "LeftDistributive"),
-   ("Annihilating", "LeftAnnihilating")] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   ("Annihilating", "LeftAnnihilating")] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a ring.
 $(makeStructureTypeSynonym' "RngStruct" "RinglikeStruct"
   ["Distributive",
-   "Annihilating"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Annihilating"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a ring.
 $(makeStructureTypeSynonym' "RingStruct" "RinglikeStruct"
   ["Distributive",
-   "Annihilating"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Annihilating"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a domain.
 $(makeStructureTypeSynonym' "DomainStruct" "RinglikeStruct"
   ["Distributive",
    "Annihilating",
-   "ZeroProduct"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "ZeroProduct"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a commutative ring.
 $(makeStructureTypeSynonym' "CommutativeRingStruct" "RinglikeStruct"
   ["Distributive",
-   "Annihilating"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Annihilating"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for an integral domain.
 $(makeStructureTypeSynonym' "IntegralDomainStruct" "RinglikeStruct"
   ["Distributive",
    "Annihilating",
    "ZeroProduct",
-   "PositiveProduct"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "PositiveProduct"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a unique factorization domain.
 $(makeStructureTypeSynonym' "UniqueFactorizationDomainStruct" "RinglikeStruct"
   ["Distributive",
    "Annihilating",
    "ZeroProduct",
    "PositiveProduct",
-   "UniquelyFactorizable"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "UniquelyFactorizable"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a Euclidean domain.
 $(makeStructureTypeSynonym' "EuclideanDomainStruct" "RinglikeStruct"
   ["Distributive",
@@ -316,7 +314,7 @@ $(makeStructureTypeSynonym' "EuclideanDomainStruct" "RinglikeStruct"
    "ZeroProduct",
    "PositiveProduct",
    "UniquelyFactorizable",
-   "Euclidean"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Euclidean"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a field.
 $(makeStructureTypeSynonym' "FieldStruct" "RinglikeStruct"
   ["Distributive",
@@ -324,12 +322,12 @@ $(makeStructureTypeSynonym' "FieldStruct" "RinglikeStruct"
    "ZeroProduct",
    "PositiveProduct",
    "UniquelyFactorizable",
-   "Euclidean"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Euclidean"] ringlikeTraits ["g1", "g2", "el"])
 -- |Type synonym for a Lie ring.
 $(makeStructureTypeSynonym' "LieRingStruct" "RinglikeStruct"
   ["Distributive",
    "JacobiIdentity",
-   "Eliminating"] ringlikeTraits ["g1", "g2", "el", "t1", "t2"])
+   "Eliminating"] ringlikeTraits ["g1", "g2", "el"])
 
 
 -- Addition of individual traits to a structure
@@ -381,118 +379,118 @@ addComplement cp (RinglikeStruct d an ja eli zp pp un euc ab _ g1 g2) = Ringlike
 -- |Creates a basic ringlike structure with two operations.
 --  Nothing else is known about it.
 makeRinglike :: (Grouplike g1, Grouplike g2)
-             => g1 el t1 -- ^The structure's first component.
-             -> g2 el t2 -- ^The structure's second component.
-             -> BasicRinglikeStruct g1 g2 el t1 t2
+             => g1 el -- ^The structure's first component.
+             -> g2 el -- ^The structure's second component.
+             -> BasicRinglikeStruct g1 g2 el
 makeRinglike = RinglikeStruct TagUnknownDistributive TagUnknownAnnihilating TagUnknownJacobiIdentity TagUnknownEliminating TagUnknownZeroProduct TagUnknownPositiveProduct TagUnknownUniquelyFactorizable TagUnknownEuclidean TagUnknownAbsorbing TagUnknownComplement
 
 -- |Creates a lattice.
 makeLattice :: (Semilattice g1, Semilattice g2)
-            => g1 el t1 -- ^The structure's first component.
-            -> g2 el t2 -- ^The structure's second component.
-            -> LatticeStruct g1 g2 el t1 t2
+            => g1 el -- ^The structure's first component.
+            -> g2 el -- ^The structure's second component.
+            -> LatticeStruct g1 g2 el
 makeLattice g1 g2 = addAnnihilating $ addDistributivity $ makeRinglike g1 g2
 
 -- |Creates a bounded lattice.
 makeBoundedLattice :: (BoundedSemilattice g1, BoundedSemilattice g2)
-                   => g1 el t1 -- ^The structure's first component.
-                   -> g2 el t2 -- ^The structure's second component.
-                   -> BoundedLatticeStruct g1 g2 el t1 t2
+                   => g1 el -- ^The structure's first component.
+                   -> g2 el -- ^The structure's second component.
+                   -> BoundedLatticeStruct g1 g2 el
 makeBoundedLattice = makeLattice
 
 -- |Creates a Boolean lattice.
 makeBooleanLattice :: (BoundedSemilattice g1, BoundedSemilattice g2)
-                   => g1 el t1 -- ^The structure's first component.
-                   -> g2 el t2 -- ^The structure's second component.
+                   => g1 el -- ^The structure's first component.
+                   -> g2 el -- ^The structure's second component.
                    -> (Un el) -- ^The complement function.
-                   -> BooleanLatticeStruct g1 g2 el t1 t2
+                   -> BooleanLatticeStruct g1 g2 el
 makeBooleanLattice g1 g2 cp = addComplement cp $ addAbsorbing $ makeLattice g1 g2
 
 -- |Creates a semiring.
 makeSemiring :: (CommutativeMonoid g1, Monoid g2)
-            => g1 el t1 -- ^The structure's first component.
-            -> g2 el t2 -- ^The structure's second component.
-            -> SemiringStruct g1 g2 el t1 t2
+            => g1 el -- ^The structure's first component.
+            -> g2 el -- ^The structure's second component.
+            -> SemiringStruct g1 g2 el
 makeSemiring g1 g2 = addAnnihilating $ addDistributivity $ makeRinglike g1 g2
 
 -- |Creates a rng.
 makeRng :: (CommutativeGroup g1, Semigroup g2)
-        => g1 el t1 -- ^The structure's first component.
-        -> g2 el t2 -- ^The structure's second component.
-        -> RngStruct g1 g2 el t1 t2
+        => g1 el -- ^The structure's first component.
+        -> g2 el -- ^The structure's second component.
+        -> RngStruct g1 g2 el
 makeRng g1 g2 = addAnnihilating $ addDistributivity $ makeRinglike g1 g2
 
 -- |Creates a right near ring.
 makeRightNearRing :: (Group g1, Semigroup g2)
-                  => g1 el t1 -- ^The structure's first component.
-                  -> g2 el t2 -- ^The structure's second component.
-                  -> RightNearRingStruct g1 g2 el t1 t2
+                  => g1 el -- ^The structure's first component.
+                  -> g2 el -- ^The structure's second component.
+                  -> RightNearRingStruct g1 g2 el
 makeRightNearRing g1 g2 = addRightAnnihilating $ addRightDistributivity $ makeRinglike g1 g2
 
 -- |Creates a left near ring.
 makeLeftNearRing :: (Group g1, Semigroup g2)
-                 => g1 el t1 -- ^The structure's first component.
-                 -> g2 el t2 -- ^The structure's second component.
-                 -> LeftNearRingStruct g1 g2 el t1 t2
+                 => g1 el -- ^The structure's first component.
+                 -> g2 el -- ^The structure's second component.
+                 -> LeftNearRingStruct g1 g2 el
 makeLeftNearRing g1 g2 = addLeftAnnihilating $ addLeftDistributivity $ makeRinglike g1 g2
 
 -- |Creates a ring.
 makeRing :: (CommutativeGroup g1, Monoid g2)
-         => g1 el t1 -- ^The structure's first component.
-         -> g2 el t2 -- ^The structure's second component.
-         -> RingStruct g1 g2 el t1 t2
+         => g1 el -- ^The structure's first component.
+         -> g2 el -- ^The structure's second component.
+         -> RingStruct g1 g2 el
 makeRing = makeSemiring
 
 -- |Creates a domain.
 makeDomain :: (CommutativeGroup g1, Monoid g2)
-           => g1 el t1 -- ^The structure's first component.
-           -> g2 el t2 -- ^The structure's second component.
-           -> DomainStruct g1 g2 el t1 t2
+           => g1 el -- ^The structure's first component.
+           -> g2 el -- ^The structure's second component.
+           -> DomainStruct g1 g2 el
 makeDomain g1 g2 = addZeroProduct $ makeRing g1 g2
 
 -- |Creates a commutative ring.
 makeCommutativeRing :: (CommutativeGroup g1, CommutativeMonoid g2)
-                    => g1 el t1 -- ^The structure's first component.
-                    -> g2 el t2 -- ^The structure's second component.
-                    -> CommutativeRingStruct g1 g2 el t1 t2
+                    => g1 el -- ^The structure's first component.
+                    -> g2 el -- ^The structure's second component.
+                    -> CommutativeRingStruct g1 g2 el
 makeCommutativeRing = makeRing
 
 -- |Creates an integral domain.
 makeIntegralDomain :: (CommutativeGroup g1, CommutativeMonoid g2)
-                   => g1 el t1 -- ^The structure's first component.
-                   -> g2 el t2 -- ^The structure's second component.
-                   -> IntegralDomainStruct g1 g2 el t1 t2
+                   => g1 el -- ^The structure's first component.
+                   -> g2 el -- ^The structure's second component.
+                   -> IntegralDomainStruct g1 g2 el
 makeIntegralDomain g1 g2 = addPositiveProduct $ addZeroProduct $ makeCommutativeRing g1 g2
 
 -- |Creates a unique factorization domain.
 makeUniqueFactorizationDomain :: (CommutativeGroup g1, CommutativeMonoid g2)
-                   => g1 el t1 -- ^The structure's first component.
-                   -> g2 el t2 -- ^The structure's second component.
+                   => g1 el -- ^The structure's first component.
+                   -> g2 el -- ^The structure's second component.
                    -> (el -> [(el,Int)]) -- ^The factorization function.
-                   -> UniqueFactorizationDomainStruct g1 g2 el t1 t2
+                   -> UniqueFactorizationDomainStruct g1 g2 el
 makeUniqueFactorizationDomain g1 g2 f = addUniquelyFactorizable f $ makeIntegralDomain g1 g2
 
 -- |Creates a Euclidean domain.
 makeEuclideanDomain :: (CommutativeGroup g1, CommutativeMonoid g2)
-                    => g1 el t1 -- ^The structure's first component.
-                    -> g2 el t2 -- ^The structure's second component.
+                    => g1 el -- ^The structure's first component.
+                    -> g2 el -- ^The structure's second component.
                     -> (el -> [(el,Int)]) -- ^The factorization function.
-                    -> EuclideanDomainStruct g1 g2 el t1 t2
+                    -> EuclideanDomainStruct g1 g2 el
 makeEuclideanDomain g1 g2 f = addEuclidean $ makeUniqueFactorizationDomain g1 g2 f
 
 -- |Creates a field.
 makeField :: (CommutativeGroup g1, CommutativeGroup g2)
-          => g1 el t1 -- ^The structure's first component.
-          -> g2 el t2 -- ^The structure's second component.
+          => g1 el -- ^The structure's first component.
+          -> g2 el -- ^The structure's second component.
           -> (el -> [(el,Int)]) -- ^The factorization function.
-          -> FieldStruct g1 g2 el t1 t2
+          -> FieldStruct g1 g2 el
 makeField = makeEuclideanDomain
 
 -- |Creates a lie ring.
 makeLieRing :: (CommutativeGroup g1, Anticommutative g2)
-            => g1 el t1 -- ^The structure's first component.
-            -> g2 el t2 -- ^The structure's second component.
-            -> LieRingStruct g1 g2 el t1 t2
+            => g1 el -- ^The structure's first component.
+            -> g2 el -- ^The structure's second component.
+            -> LieRingStruct g1 g2 el
 makeLieRing g1 g2 = addJacobiIdentity $ addEliminating $ addDistributivity $ makeRinglike g1 g2 
 
 
@@ -517,41 +515,41 @@ makeDynamic r = (RinglikeStruct (isDistributive r)
 -- Typesafe accessor functions for structures
 
 -- |Returns whether the structure is distributive.
-isDistributive :: (DistributivityTag d) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> DistributivityValue
+isDistributive :: (DistributivityTag d) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> DistributivityValue
 isDistributive = getDistributivityValue . rDistributive
 
 -- |Returns whether the structure is annihilating.
-isAnnihilating :: (AnnihilationTag an) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> AnnihilationValue
+isAnnihilating :: (AnnihilationTag an) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> AnnihilationValue
 isAnnihilating = getAnnihilationValue . rAnnihiliate
 
 -- |Returns whether the structure obeys the Jacobi identity.
-hasJacobiIdentity :: (JacobiIdentityTag ja) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> JacobiIdentityValue
+hasJacobiIdentity :: (JacobiIdentityTag ja) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> JacobiIdentityValue
 hasJacobiIdentity = getJacobiIdentityValue . rJacobiIdentity
 
 -- |Returns whether the structure is eliminating.
-isEliminating :: (EliminatingTag eli) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> EliminatingValue
+isEliminating :: (EliminatingTag eli) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> EliminatingValue
 isEliminating = getEliminatingValue . rEliminating
 
 -- |Returns whether a zero product implies zero factors in a structure.
-hasZeroProduct :: (ZeroProductTag zp) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> ZeroProductValue
+hasZeroProduct :: (ZeroProductTag zp) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> ZeroProductValue
 hasZeroProduct = getZeroProductValue . rZeroProduct
 
 -- |Returns whether the product of two non-zero elements is non-zero in the structure.
-hasPositiveProduct :: (PositiveProductTag pp) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> PositiveProductValue
+hasPositiveProduct :: (PositiveProductTag pp) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> PositiveProductValue
 hasPositiveProduct = getPositiveProductValue . rPositiveProduct
 
 -- |Returns whether the structure is unique factorizable
-getFactorizationFunction :: (UniquelyFactorizableTag un) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> UniquelyFactorizableValue (el -> [(el, Int)])
+getFactorizationFunction :: (UniquelyFactorizableTag un) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> UniquelyFactorizableValue (el -> [(el, Int)])
 getFactorizationFunction = getUniquelyFactorizableValue . rUniquelyFactorizable
 
 -- |Returns whether the structure is Euclidean.
-isEuclidean :: (EuclideanTag euc) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> EuclideanValue
+isEuclidean :: (EuclideanTag euc) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> EuclideanValue
 isEuclidean = getEuclideanValue . rEuclidean
 
 -- |Returns whether the structure is absorbing.
-isAbsorbing :: (AbsorbingTag ab) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> AbsorbingValue
+isAbsorbing :: (AbsorbingTag ab) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> AbsorbingValue
 isAbsorbing = getAbsorbingValue . rAbsorbing
 
 -- |Returns whether the structure has a complement operation.
-hasComplement :: (ComplementTag cp) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el t1 t2 -> ComplementValue (Un el)
+hasComplement :: (ComplementTag cp) => RinglikeStruct d an ja eli zp pp un euc ab cp g1 g2 el -> ComplementValue (Un el)
 hasComplement = getComplementValue . rComplement

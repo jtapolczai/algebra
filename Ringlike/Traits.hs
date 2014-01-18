@@ -116,8 +116,8 @@ instance Show (ComplementValue c) where
 
 -- |A grouplike structure composed of two grouplike structures.
 class Ringlike r where
-   getStruct1 :: Grouplike g1 => r g1 g2 el t1 t2 -> (g1 el t1)
-   getStruct2 :: Grouplike g2 => r g1 g2 el t1 t2 -> (g2 el t2)
+   getStruct1 :: Grouplike g1 => r g1 g2 el -> (g1 el)
+   getStruct2 :: Grouplike g2 => r g1 g2 el -> (g2 el)
 
 --Individual traits which compose into the known structures (Rigs, Rings, Rngs, etc.)
 
@@ -144,11 +144,11 @@ class Ringlike s => ZeroProduct s where
 class Ringlike s => PositiveProduct s where
 -- |A ringlike structure in which every element can be uniquely factorized.
 class Ringlike s => UniquelyFactorizable s where
-  factorize :: s g1 g2 el t1 t2 -> el -> [(el, Int)]
+  factorize :: s g1 g2 el -> el -> [(el, Int)]
 -- |A ringlike structure in which a Euclidean function can be used.
 class Ringlike s => Euclidean s where
 -- |A ringlike structure where absorption holds.
 class Ringlike s => Absorbing s where
 -- |A ringlike structure in which every element has a complement.
 class Ringlike s => Complement s where
-  complement :: s g1 g2 el t1 t2 -> el -> el
+  complement :: s g1 g2 el -> el -> el

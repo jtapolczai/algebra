@@ -101,7 +101,7 @@ instance Show (InverseValue el) where
 
 -- |A grouplike structure with a binary operation.
 class Grouplike s where
-   op :: s el t -> Bin el
+   op :: s el -> Bin el
 
 --Individual traits which compose into the known structures (Monoids, Groups, etc.)
 
@@ -115,18 +115,18 @@ class Grouplike s => Associative s where
 class Grouplike s => Idempotent s where
 -- |A grouplike structure with a unit element U: a `op` U = U `op` a = a 
 class Grouplike s => HasUnitElement s where
-   ident :: s el t -> el
+   ident :: s el -> el
 -- |A grouplike structure where there exists a left divider l for
 --  every pair of elements a,b: a `op` l = b
 class Grouplike s => LeftDivisible s where
-   lDiv :: s el t -> Bin el
+   lDiv :: s el -> Bin el
 -- |A grouplike structure where there exists a right divider r for
 --  every pair of elements a,b: r `op` a = b
 class Grouplike s => RightDivisible s where
-   rDiv :: s el t -> Bin el
+   rDiv :: s el -> Bin el
 -- |A grouplike structure which has both left and right dividers.
 class (Grouplike s, LeftDivisible s, RightDivisible s) => Divisible s where
 -- |A grouplike structure where every element a has an inverse ia,
 --  which reduces a to the unit element U: a `op` ia = U
 class (Grouplike s, HasUnitElement s) => Invertible s where
-   inverse :: s el t -> Un el
+   inverse :: s el -> Un el
