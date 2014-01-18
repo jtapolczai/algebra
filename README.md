@@ -8,12 +8,33 @@ Features
 --------
 
 The package provides the following classes of structures:
-* Grouplike structures (predefined are: magmas, quasigroups, semigroups, loops, (commutative) monoids, (commutative) groups, (bounded) semilattices)
-* Ringlike structures (predifined are: semirings, (right/left) near rings, (commutative) rings, (bounded) lattices, Boolean rings, domains, integral domains, unique factorization domains, Euclidean domains, fields)
-* Relations (predefined are: partial/total orderings, equivalence relations)
-* Modules: to be done
-* Vector spaces: to be done
-* Algebras: to be done
+* **Grouplike structures**. Predefined are:
+  * magmas
+  * quasigroups
+  * semigroups
+  * loops
+  * (commutative) monoids
+  * (commutative) groups
+  * (bounded) semilattices
+* **Ringlike structures**. Predifined are:
+  * semirings
+  * rigs
+  * (right/left) near rings
+  * (commutative) rings
+  * (bounded) lattices
+  * Boolean lattices
+  * domains
+  * integral domains
+  * unique factorization domains
+  * Euclidean domains
+  * fields
+* **Relations**. Predefined are:
+  * partial/total orderings
+  * equivalence relations
+* **Modules**. to be done
+* **Vector spaces**. to be done
+* **Algebras**. to be done
+* **Automata theory**. to be done
 
 In each category, more structures can be defined by the user by selecting combinations of predefined traits --- in fact, the predefined structures are just there for convenience and are nothing more than shorthand notation for the presence of trait-combinations: every structure that is associative and has a unit element is automatically a monoid, every one which is invertible is also a group. Any function can ask for specific, named structures, or just certain traits.
 
@@ -65,7 +86,7 @@ alternate dummy extract = foldl f (mempty, opList)
 
 We could much simplify the whole affair by splitting off algebraic structures into independent values and thus declutter `Int`. That would enable us to write the function thus (`op` is the operation, `ident` the unit element):
 ```haskell
-alternate :: (Monoid a , Monoid b) => (a Int) -> (b Int) -> [Int]
+alternate :: (Monoid a , Monoid b) => (a el) -> (b el) -> [el]
 alternate = foldl f (ident a, opList)
   where opList = (op a) : (op b) : opList
         f (acc, op:ops) value = (acc `op` value, ops)
@@ -75,7 +96,7 @@ This version is fully polymorophic and requires only the obvious values: two mon
 
 ### Motivating example #2
 
-Suppose that we wish to take two monoids and, knowing that distributivity holds and that "multiplication" with 0 results in 0, create a semiring. If the two monoids are type classes over two types, there is no obvious way to do this. We'd either have to write a `Semiring` class from scratch,
+Suppose that we wish to take two (commutative) monoids and, knowing that distributivity holds and that "multiplication" with 0 results in 0, create a semiring. If the two monoids are type classes over two types, there is no obvious way to do this. We'd either have to write a `Semiring` class from scratch,
 
 ```haskell
 class Semiring a where
@@ -99,7 +120,52 @@ For `Int`, calling `mult` would look like this: `mult (MultInt 0) fromMI 3 7 = 2
 
 We can do this much more easily if monoid are just values; we could just have a type `Semiring` and a function
 ```haskell
+-- Create a semiring R out of two monoids, where (*) distributes over (+) and where (*0) annihilates R.
 makeSemiring :: (Monoid a, Monoid b) => (a e) -> (b e) -> Semiring e
+makeSemiring a b = addAnnihilation $ addDistributivity  $ makeBasicRinglike a b
 ```
 
 To get back the constituting monoids, we could call simply call two getters `struct1` and `struct2`.
+
+Dynamic & static structures
+---------------------------
+
+Per default, constraints like `Commutative` on algebraic structures are statically enforced and structures with different traits have different types. As an example:
+
+```haskell
+solveFormula :: (Field f s1 s2) => f s1 s2 el -> [[el]] -> el
+solveFormula f = sum . map product
+   where product = foldl (op $ getStruct1 f) (ident $ getStruct1 f)
+         sum = foldl (op $ getStruct2 f) (ident $ getStruct2 f)
+```
+
+Here, we want to calculate the result of an expression of the form <img src="http://latex.codecogs.com/gif.latex?\inline&space;(a_{1,1}&space;*&space;\dots&space;*&space;a_{1,n_1})&space;&plus;&space;\dots&space;&plus;&space;(a_{m,1}&space;*&space;\dots&space;*&space;a_{m,n_m})" title="(a_{1,1} * \dots * a_{1,n_1}) + \dots + (a_{m,1} * \dots * a_{m,n_m})" /> and specify that we want as the first argument a field composed of two substructures `s1` and `s2`. The type definition of a field ensures that `s1` and `s2` will be commutative groups. We get the functions `sum` and `product` by simply extracting the operations and unit elements of `s1` and `s2`.
+
+For most applications, this completely suffices and will be appropriate. However, there are certain things that cannot be done in this framework. Specifically, one cannot
+* accept an arbitrary structure and determine its traits dynamically or
+* accept a list of different structures.
+
+There is a way to accomplish these tasks: every kind of structure has an `Internal` module which exposes details about its construction and allows the bypassing of the static type checks. The internal interface for, say, grouplike structures, is simply an expanded version of the default one, with two additions:
+1. for every traits, there is an accessor named `isCommutative`, `hasUnitElement`, `isDistributive`, or something similar. These functions can be applied on any structure to get information about it at runtime and
+2. the function `makeDynamic` which, when applied to a structure, makes it **dynamic**. All dynamic structures (within a category) are of the same type; thereby, they bypass all static type checks on structures and will be accepted everywhere.
+
+`makeDynamic` is of course hazardrous, but can sometime be useful. For example, we can write a function that goes through a list of grouplike structures and determines whether they are commutative:
+
+```haskell
+intAdd = makeCommutativeGroup (+) 0
+intSub = makeMonoid (-) 0
+digitConcat = makeSemigroup (\x y -> read $ show x ++ show y) 
+
+mapCommutative :: [DynamicGroupStruct el] -> [CommutativityValue]
+mapCommutative = map (f . isCommutative)
+  where f Commutative = True
+        f _           = False -- 'UnknownCommutative' and 'AntiCommutative' are also possible
+```
+
+Testing this out:
+
+```haskell
+> import Grouplike.Internal (makeDynamic)
+> mapCommutative [makeDynamic intAdd, makeDynamic intSub, makeDynamic digitConcat]
+[True, False, False]
+```
