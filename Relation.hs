@@ -2,4 +2,5 @@
     TODO.
 -}
 module Relation (
-   module Relation.Internal)where
+   module Relation.Internal
+   ) where

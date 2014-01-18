@@ -10,20 +10,7 @@
 
   The following traits exist:
 
-  [@Commutative@] @for all a, b: a + b = b + a@
-
-  [@Associative@] @for all a, b, c: (a + b) + c = a + (b + c)@
-
-  [@Idempotent@] @for all a: a + a = a@
-
-  [@UnitElement@] @for all a and the unit element 1: a + 1 = 1 + a = a@
-
-  [@LeftDivisible@] @for all a, b there exists x: x + a = b@
-
-  [@RightDivisible@] @for all a, b there exists y: a + y = b@
-
-  [@Invertible@] @for all a, their inverse a' and the unit element 1: a + a' = a' + a = 1@
-
+  TODO
 -}
 module Relation.Traits where
 
@@ -116,13 +103,13 @@ instance Show SetLikeValue where
 
 -- |A relation with a binary predicate.
 class Relation s where
-   rel :: s el1 el2 t -> Rel el1 el2
+   rel :: s el1 el2 -> Rel el1 el2
 
 --TODO: add a kind signature to this to
 --get rid of dummy.
 -- |An endorelation with a binary predicate.
 class Relation s => Endorelation s where
-   dummy :: s el el t -> Rel el el
+   dummy :: s el el -> Rel el el
 
 
 -- |An injective relation: aRc and bRc implies a = b.

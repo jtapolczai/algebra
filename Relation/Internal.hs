@@ -1,5 +1,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 
+{-|
+-}
 module Relation.Internal where
 
 import Helper
@@ -17,17 +19,16 @@ class (PartialOrder s, Total s) => TotalOrder s
 
 -- |A binary relation over sets X and Y, containing
 --  elements of type el1 and el2, respectively.
-data RelationStruct inj func lt rt el1 el2 t =
+data RelationStruct inj func lt rt el1 el2 =
    RelationStruct{relInjectivity::inj,
                   relFunctionality::func,
                   relLeftTotality::lt,
                   relRightTotality::rt,
-                  relPred::Rel el1 el2,
-                  relTag::t}
+                  relPred::Rel el1 el2}
 
 -- |A binary endorelation, i.e. a relation
 --  over one set X, containing elements of type el.
-data EndorelationStruct' r s tr tot tri euc ser set rel el el2 t =
+data EndorelationStruct' r s tr tot tri euc ser set rel el el2 =
    EndorelationStruct'{relReflexivity::r,
                       relSymmetry::s,
                       relTransitivity::tr,
@@ -36,22 +37,20 @@ data EndorelationStruct' r s tr tot tri euc ser set rel el el2 t =
                       relEuclidean::euc,
                       relSeriality::ser,
                       relSetLike::set,
-                      relRelation::rel el el2 t}
+                      relRelation::rel el el2}
 
-type EndorelationStruct r s tr tot tri euc ser set rel el t =
-   EndorelationStruct' r s tr tot tri euc ser set rel el el t
+type EndorelationStruct r s tr tot tri euc ser set rel el =
+   EndorelationStruct' r s tr tot tri euc ser set rel el el
 
 instance (InjectivityTag inj,
           FunctionalityTag func,
           LeftTotalityTag lt,
-          RightTotalityTag rt,
-          Show t) => Show (RelationStruct inj func lt rt el1 el2 t) where
-   show struct = "Relation [" ++ show t ++ "] (" ++ implode ", " traits ++ ")"
+          RightTotalityTag rt) => Show (RelationStruct inj func lt rt el1 el2) where
+   show struct = "Relation (" ++ implode ", " traits ++ ")"
       where i = getInjectivityValue $ relInjectivity struct
             f = getFunctionalityValue $ relFunctionality struct
             l = getLeftTotalityValue $ relLeftTotality struct
             r = getRightTotalityValue $ relRightTotality struct
-            t = relTag struct
             traits = filter (not . null) $ [show i, show f, show l, show r]
 
 
