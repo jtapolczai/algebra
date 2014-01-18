@@ -13,19 +13,14 @@
   the monoid to @(&&, True)@, while the list of Bools and the function to sum them
   stays exactly the same.
 
-  Such a structure is parametrized with two types:
-
-  1. the type of its elements (@el@) and
-
-  2. a tag @t@ which can be used to identify it.
-
   The basic structure is the 'Magma', which doesn't guarantee anything
   beyond the presence of a binary operation on the structure's type.
 
   On top of this, a structure may posess certain additional traits. If we call
   the operation @+@ and the elements of the structure @a, b ,c ,x ,y , 1@ then tese are:
 
-  [@Commutative@] @for all a, b: a + b = b + a@
+  [@Commutative@] Commutative: @for all a, b: a + b = b + a@. AntiCommutative:
+  @for all a,b and the inverse function ': a+b = (b+a)'@.
 
   [@Associative@] @for all a, b, c: (a + b) + c = a + (b + c)@
 
@@ -46,19 +41,19 @@
   For example, the we can create the same monoid in two ways:
 
   @
-    makeMonoid (+) 0 "AddMonoid" == addUnitElement 0 $ addAssociativity $ makeMagma (+) "AddMonoid"
+    makeMonoid (+) 0 == addUnitElement 0 $ addAssociativity $ makeMagma (+)
   @
 
   Functions can specify that they expect a certain structure by giving a named
   structure and/or a collection of of desired traits in their context. A few examples:
 
   @
-    sum :: (Monoid a) => a el t -> [el] -> el
+    sum :: (Monoid a) => a el -> [el] -> el
     sum struct = foldl (op struct) (ident struct)
   @
 
   @
-    removeDuplicates :: (Eq el, Associative a, Idempotent a) => a el t -> [el] -> [el]
+    removeDuplicates :: (Eq el, Associative a, Idempotent a) => a el -> [el] -> [el]
     removeDuplicates _ = nub
   @
 
@@ -66,11 +61,11 @@
   The following function takes a list of structures and gets their unit elements:
 
   @
-    getUnits :: (Magma a) => [a el k] -> [el]
+    getUnits :: (Magma a) => [a el] -> [el]
     getUnits = map ident
   @
 
-  >>>getUnits [makeMonoid (+) 0 "add", makeSemigroup min "min", makeMonoid (*) 1 "mul", makeGroup (\x y -> 0) id 0 "zero"]
+  >>>getUnits [makeMonoid (+) 0, makeSemigroup min, makeMonoid (*) 1, makeGroup (\x y -> 0) id 0]
   [Just 0, Nothing, Just 1, Nothing]
 
   The following structures are predefined:
@@ -97,7 +92,7 @@
 -}
 module Grouplike (
    module Grouplike.Traits,
-   GrouplikeStruct(gTag),
+   GrouplikeStruct,
 
    -- * Predefined classes
    Quasigroup,

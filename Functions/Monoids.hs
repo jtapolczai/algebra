@@ -24,28 +24,28 @@ import qualified Data.Set as Set
 import Grouplike
 
 -- |The commutative monoid @(Bool, &&, True)@
-andMonoid :: CommutativeMonoidStruct Bool String
-andMonoid = makeCommutativeMonoid (&&) True "boolAnd"
+andMonoid :: CommutativeMonoidStruct Bool
+andMonoid = makeCommutativeMonoid (&&) True
 
 -- |The commutative monoid @(Bool, ||, False)@
-orMonoid :: CommutativeMonoidStruct Bool String
-orMonoid = makeCommutativeMonoid (||) False "boolOr"
+orMonoid :: CommutativeMonoidStruct Bool
+orMonoid = makeCommutativeMonoid (||) False
 
 -- |The commutative monoid @(Num, *, 0)@ for numbers
-mulMonoid :: Num a => CommutativeMonoidStruct a String
-mulMonoid = makeCommutativeMonoid (*) (fromInteger 0) "intMul"
+mulMonoid :: Num a => CommutativeMonoidStruct a
+mulMonoid = makeCommutativeMonoid (*) (fromInteger 0)
 
 -- |The monoid @([a], ++, [])@ for lists.
-listMonoid :: MonoidStruct [a] String
-listMonoid = makeMonoid (++) [] "listConcat"
+listMonoid :: MonoidStruct [a]
+listMonoid = makeMonoid (++) []
 
 -- |The monoid @((a -> a), (.), id)@ for functions.
-funcMonoid :: MonoidStruct (a -> a) String
-funcMonoid = makeMonoid (.) id "funCompose"
+funcMonoid :: MonoidStruct (a -> a)
+funcMonoid = makeMonoid (.) id
 
 -- |The commutative monoid @(Set a, `union`, empty)@ for sets.
-unionMonoid :: Ord a => CommutativeMonoidStruct (Set.Set a) String
-unionMonoid = makeCommutativeMonoid (Set.union) (Set.empty) "setUnion"
+unionMonoid :: Ord a => CommutativeMonoidStruct (Set.Set a)
+unionMonoid = makeCommutativeMonoid (Set.union) (Set.empty)
 
 -- |The monoid @(Maybe el, f, Nothing)@ for Maybe el which wraps an existing
 --  monoid into a Maybe.
@@ -56,8 +56,8 @@ unionMonoid = makeCommutativeMonoid (Set.union) (Set.empty) "setUnion"
 --f (Just x) (Just y) = Just $ x + y
 --f _ _               = Nothing
 --  @
-maybeMonoid :: Monoid a => a el t -> MonoidStruct (Maybe el) String
-maybeMonoid m = makeMonoid f Nothing "maybeMonoid"
+maybeMonoid :: Monoid a => a el -> MonoidStruct (Maybe el)
+maybeMonoid m = makeMonoid f Nothing
   where f (Just x) (Just y) = Just $ (op m) x y
         f _ _               = Nothing
 
@@ -71,20 +71,20 @@ maybeMonoid m = makeMonoid f Nothing "maybeMonoid"
 -- This wraps monads inside a monoid, where the elements
 -- are of type @a -> m a@, and the operation is @>>=@, slightly changed
 -- to have the type @(a -> m a) -> (a -> m a) -> (a -> m a)@.
-monadMonoid :: Monad m => MonoidStruct (a -> m a) String
-monadMonoid = makeMonoid bind return "monadMonoid"
+monadMonoid :: Monad m => MonoidStruct (a -> m a)
+monadMonoid = makeMonoid bind return
   where bind f g = \x -> (g x >>= f)
 
 -- |Calculates the sum of a collection of elements.
 mdsum :: (Monoid a, Foldable l)
-     => a el t -- ^The monoid structure with which to sum.
+     => a el -- ^The monoid structure with which to sum.
      -> l el -- ^A foldable collection of elements.
      -> el -- ^The sum of the elements.
 mdsum struct = foldl (op struct) (ident struct)
 
 -- |The strict version of msum.
 mdsum' :: (Monoid a, Foldable l)
-     => a el t -- ^The monoid structure with which to sum.
+     => a el -- ^The monoid structure with which to sum.
      -> l el -- ^A foldable collection of elements.
      -> el -- ^The sum of the elements.
 mdsum' struct = foldl' (op struct) (ident struct)

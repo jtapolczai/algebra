@@ -1,5 +1,6 @@
 {-# LANGUAGE ExistentialQuantification #-}
 
+-- |Contains small helper functions and definitions of little import.
 module Helper where
 
 -- |A unary operation.

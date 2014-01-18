@@ -44,6 +44,16 @@ description:   Algebra package which uses explicit objects instead of type class
                   or = mdSum (makeMonoid (||) False)
                @
 
+               For each kind of object (grouplike, ringlike, etc.), there are
+               two modules: one with the name of that object (Grouplike, Ringlike, etc.),
+               which should suffice for most applications, and one in the sub-namespace
+               "Internal", which exposes internal details about their construction and
+               allows the performing of reflection about algebraic structures. In particular,
+               the .Internal modules allow the converions into 'dynamic' structures, which
+               bypass the static type checks. This allows things like heterogeneous
+               lists of structures, but without the type checker to make assurances,
+               the user must now take care to only pass appropriate structures into functions.
+
 category:      Algebra
 license:       PublicDomain
 
@@ -53,4 +63,5 @@ library
    exposed-modules: Helper,
                     Grouplike, Grouplike.Internal, Grouplike.Traits,
                     Ringlike, Ringlike.Internal, Ringlike.Traits,
+                    Relation, Relation.Internal, Relation.Traits,
                     Functions.Monoids, Functions.Groups
